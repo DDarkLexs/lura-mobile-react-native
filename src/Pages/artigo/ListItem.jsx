@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import {View, ToastAndroid, AlertButton, StyleSheet} from 'react-native';
+import {View, ToastAndroid, AlertButton, StyleSheet, ScrollView} from 'react-native';
 import {
   Text,
   useTheme,
@@ -14,6 +14,7 @@ import {
 import {useSelector, useDispatch} from 'react-redux';
 import {DataTable, Button} from 'react-native-paper';
 import {getArtigos, deleteArtigo} from '../../utils/database';
+import { deleteArigoById } from '../../controller/artigo';
 import {actions as artigoActions} from '../../store/reducers/artigo';
 import {CadastroSection} from '../artigo/registro';
 import {QualidadePage} from '../Qualidade/todo';
@@ -26,6 +27,7 @@ import swal from 'react-native-sweet-alert';
 
 export const ArtigoListItem = navigation => {
   const [visible, setVisible] = useState(false);
+  const [pesquisa, setPesquisa] = useState('');
 
   const showDialog = () => setVisible(true);
 
@@ -50,10 +52,11 @@ export const ArtigoListItem = navigation => {
   const nextPage = () => {
     setprop(null);
   };
-  const deleteItem = item => {
+  const deleteItem = async (item) => {
     try {
       dispatch(artigoActions.setLoading(true));
-      const response = deleteArtigo(item.id_produto);
+
+      const response = await deleteArigoById(item.id_produto) 
       // console.log(response)
       swal.showAlertWithOptions({
         title: 'removido com sucesso',
@@ -126,7 +129,7 @@ export const ArtigoListItem = navigation => {
 
   const Prinpipal = () => {
     return (
-      <View style={ styles.containerStyle }>
+      <ScrollView style={ styles.containerStyle }>
         <View>
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
         <Button
@@ -159,9 +162,7 @@ export const ArtigoListItem = navigation => {
         </Portal>
       </View>
       <View style={ styles.containerSearch }>
-      <Searchbar
-      placeholder="Procura"
-      />
+      <Searchbar onChangeText={(text)=>{ setPesquisa(text) }} placeholder="Pesquisar" />
       </View>
       
 
@@ -191,7 +192,7 @@ export const ArtigoListItem = navigation => {
             // label="1-2 para 6"
           />
         </DataTable>
-      </View>
+      </ScrollView>
     );
   };
 

@@ -1,21 +1,72 @@
 import React, { useState } from 'react';
 import { View,StyleSheet,ImageBackground } from 'react-native';
-import { TextInput,  Button, Card,Avatar,Text  } from 'react-native-paper';
+import { TextInput,  Button, Card,Avatar,Text ,HelperText } from 'react-native-paper';
 // import { generateAccessToken } from '../../config/jwt'
 import { useEffect } from 'react';
+import {  generateBioauth } from '../../config/biometric';
+import {  loginUser,loginUserAuto } from '../../controller/usuario';
+import { generateAccessToken } from '../../config/jwt';
+import { actions } from '../../store/reducers/usuario'
+import swal from 'react-native-sweet-alert';
+import {useSelector, useDispatch} from 'react-redux';
+
 const LoginScreen = () => {
-  const [email, setEmail] = useState('');
+  const [nome, setNome] = useState('');
   const [password, setPassword] = useState('');
+  const [loading,setLoading ] = useState(false);
+  const account = useSelector(state => state.usuario.account)
+
+  const dispatch = useDispatch()
+  
 
     useEffect(()=> {
+      const fisrt = async () => {
+        setLoading(true)
+        try {
+          
+          const result = await generateBioauth()
+          if (result.success) {
+            // console.log(result)
+            const user = await loginUserAuto()
+            dispatch(actions.setAccount( user ))            
+          }
+          setLoading(false)
+        } catch (error) {
+          setLoading(false)
+          console.error(error)          
+        }
 
-      generateAccessToken({ nome:'antonio lugogo' })
+      }
+
+      fisrt()
+      // generateAccessToken({ nome:'antonio lugogo' })
     },[])
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // Aqui você pode implementar a lógica de autenticação
-    console.log('Email:', email);
-    console.log('Password:', password);
+    try {
+      setLoading(true)
+      const account = await loginUser({ nome, password })
+      dispatch(actions.setAccount( account ))
+      // await generateAccessToken(result)
+
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      setLoading(false)
+      swal.showAlertWithOptions({
+        title: 'Houve um erro',
+        subTitle: `${error}!`,
+        confirmButtonTitle: 'OK',
+        confirmButtonColor: '#000',
+        otherButtonTitle: 'Cancel',
+        otherButtonColor: '#dedede',
+        style: 'error',
+        cancellable: true,
+        // onConfirm: () => console.log('Confirmed'),
+        // onCancel: () => console.log('Cancelled'),
+      });
+    }
   };
 
   return (
@@ -23,7 +74,7 @@ const LoginScreen = () => {
     source={require('../../assets/images/background-login.jpg')}
     style={styles.backgroundImage}>
     <View style={styles.container}>
-    <Card>
+    <Card disabled={loading}>
         <Card.Content >
 
         <View style={{ alignItems: 'center', margin:"auto",justifyContent:'center' }}>
@@ -37,32 +88,38 @@ const LoginScreen = () => {
         </View>
       <TextInput
         label="Nome"
-        value={email}
-        onChangeText={setEmail}
+        value={nome}
+        onChangeText={setNome}
         mode="outlined"
         keyboardType="default"
         autoCapitalize="none"
+        disabled={loading}
         right={ <TextInput.Icon  icon={'account'} name="account" />}
         style={{ marginBottom: 16 }}
         />
+     
       <TextInput
         label="Palavra-passe"
         value={password}
         onChangeText={setPassword}
+        disabled={loading}
         mode="outlined"
         secureTextEntry
         right={ <TextInput.Icon icon={'lock'} name="lock" />}
         style={{ marginBottom: 16 }}
       />
-      <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-      <Button style={{ marginRight:'auto' }} mode="contained" textColor={'white'} onPress={handleLogin}>
+      {/* <View style={{ flexDirection: 'row', justifyContent: 'center' }}> */}
+      <Button  
+      disabled={loading}
+      loading={loading}
+      mode="contained" textColor={'white'} onPress={handleLogin}>
         Entrar
       </Button>
-      <Button mode="contained" textColor={'white'}>
+      {/* <Button mode="contained" textColor={'white'}>
         criar conta
-      </Button>
+      </Button> */}
 
-      </View>
+      {/* </View> */}
       </Card.Content>
       </Card>
     </View>

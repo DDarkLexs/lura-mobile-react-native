@@ -1,19 +1,27 @@
-import jwt from 'jsonwebtoken';
+import moment from 'moment';
+import { knex } from '../utils/database'
 const secretKey = 'your-secret-key';
 
 export const generateAccessToken = (user) => {
+  return new Promise(async (resolve,reject) => {
+    try {
+      const response  = await knex('auth').insert({   
+        query:JSON.stringify(user),
+        secretKey:secretKey,
+        hash:secretKey,
+        expireIn:moment().second("1600s")
+       }) 
+    } catch (error) {
+      reject(error)
+    }
+
+  })
   // console.log(user)
-  return jwt.sign(user, secretKey, {expiresIn: '10s'});
 }
 
-export const verifyToken = (token, secretKey) => {
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, secretKey, (err, decoded) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(decoded);
-      }
-    });
+export const verifyToken = () => {
+  return new Promise(async (resolve, reject) => {
+    await knex('auth')
+    .select("*")
   });
 };

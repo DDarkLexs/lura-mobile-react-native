@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Appearance /* ,Button */, Alert} from 'react-native';
 import swal from 'react-native-sweet-alert';
-import { formatCurrency } from '../../utils/currency'
+import {formatCurrency} from '../../utils/currency';
 import {
   Text,
   Button,
@@ -11,13 +11,12 @@ import {
   TextInput,
   Menu,
   ActivityIndicator,
-  HelperText
+  HelperText,
 } from 'react-native-paper';
-import {useSelector, useStore, useDispatch } from 'react-redux';
-import { insertArtigo,getArtigos } from '../../utils/database'
-import { ToastAndroid } from 'react-native';
-import {  actions as artigoActions } from '../../store/reducers/artigo'
-
+import {useSelector, useStore, useDispatch} from 'react-redux';
+import {insertNew} from '../../controller/artigo';
+import {ToastAndroid} from 'react-native';
+import {actions as artigoActions} from '../../store/reducers/artigo';
 
 export const CadastroSection = () => {
   const theme = useTheme();
@@ -25,27 +24,27 @@ export const CadastroSection = () => {
   const [categoria, setCategoria] = useState('');
   const [preco, setPreco] = useState(0);
   const [descricao, setDescricao] = useState('');
-  
+
   // const store = useStore().getState();
   const dispatch = useDispatch();
 
   const propiedade = {nome, categoria, preco, descricao};
-  const  loading  = useSelector(state => state.artigo.loading)
+  const loading = useSelector(state => state.artigo.loading);
 
   /* ==================================================== */
   const [visible, setVisible] = useState(false);
-  
+
   const handleMenuItemPress = item => {
     setSelectedItem(item);
     closeMenu();
   };
-  
+
   const registrar = async () => {
     try {
       dispatch(artigoActions.setLoading(true));
-      const result = await insertArtigo(propiedade)
 
-      dispatch(artigoActions.setLoading(false));
+      
+      const response = await insertNew(propiedade);
 
       swal.showAlertWithOptions({
         title: 'sucesso',
@@ -56,68 +55,67 @@ export const CadastroSection = () => {
         otherButtonColor: '#dedede',
         style: 'success',
         cancellable: true,
-        onConfirm: () => console.log('Confirmed'),
-        onCancel: () => console.log('Cancelled'),
+        // onConfirm: () => console.log('Confirmed'),
+        // onCancel: () => console.log('Cancelled'),
       });
-      
+      dispatch(artigoActions.setLoading(false));
     } catch (error) {
       dispatch(artigoActions.setLoading(false));
-      
-      ToastAndroid.show(`Houve um erro: ${error}`,ToastAndroid.LONG)
+
+      ToastAndroid.show(`Houve um erro: ${error}`, ToastAndroid.LONG);
     }
   };
 
   return (
     <View>
-   <TextInput
-          label={'Nome'}
-          keyboardType="default"
-          mode="outlined"
-          disabled={loading}
-          onChangeText={text => {
-            setNome(text);
-          }}
-          // right={<TextInput.Icon icon="box" />}
-        />
-        <TextInput
-          label="categoria"
-          disabled={loading}
-          onChangeText={text => setCategoria(text)}
-          mode="outlined"
-          keyboardType="default"
-        />
-         
-        <TextInput
-          label="Preço"
-          defaultValue="0"
-          disabled={loading}
-          onChangeText={text => setPreco(text)}
-          mode="outlined"
-          keyboardType="decimal-pad"
-        />
-        <HelperText type="info" visible={true}>
-        { formatCurrency(preco) }
-        </HelperText>
-        <TextInput
-          label="Descrição"
-          numberOfLines={4}
-          multiline={true}
-          disabled={loading}
-          mode="outlined"
-          keyboardType="default"
-        />
-        <Button
-          onPress={registrar}
-          mode="contained"
-          disabled={loading}
-          loading={loading}
-          style={{width: 'auto', marginTop:12 }}
-          textColor="white"
-          buttonColor={theme.colors.primary}>
-          Registrar
-        </Button>
-        {/* <ActivityIndicator color='white' /> */}
+      <TextInput
+        label={'Nome'}
+        keyboardType="default"
+        mode="outlined"
+        disabled={loading}
+        onChangeText={text => {
+          setNome(text);
+        }}
+        // right={<TextInput.Icon icon="box" />}
+      />
+      <TextInput
+        label="categoria"
+        disabled={loading}
+        onChangeText={text => setCategoria(text)}
+        mode="outlined"
+        keyboardType="default"
+      />
 
+      <TextInput
+        label="Preço"
+        defaultValue="0"
+        disabled={loading}
+        onChangeText={text => setPreco(text)}
+        mode="outlined"
+        keyboardType="decimal-pad"
+      />
+      <HelperText type="info" visible={true}>
+        {formatCurrency(preco)}
+      </HelperText>
+      <TextInput
+        label="Descrição"
+        numberOfLines={4}
+        multiline={true}
+        disabled={loading}
+        mode="outlined"
+        keyboardType="default"
+      />
+      <Button
+        onPress={registrar}
+        mode="contained"
+        disabled={loading}
+        loading={loading}
+        style={{width: 'auto', marginTop: 12}}
+        textColor="white"
+        buttonColor={theme.colors.primary}>
+        Registrar
+      </Button>
+      {/* <ActivityIndicator color='white' /> */}
     </View>
   );
 };

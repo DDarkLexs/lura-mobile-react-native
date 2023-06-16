@@ -16,6 +16,7 @@ import {
   useTheme,
   BottomNavigation,
   Divider,
+  
 } from 'react-native-paper';
 import {useSelector, useStore, useDispatch} from 'react-redux';
 import { CadastroSection } from './artigo/registro';
@@ -23,6 +24,7 @@ import { ArtigoListItem as artigoPage  } from './artigo/ListItem';
 import { ProfileScreen } from './ProfileScreen';
 import {  BiometricsScreen } from '../components/biometrico';
 import {actions as routeAction} from '../store/reducers/routes';
+import {actions as userAction} from '../store/reducers/usuario';
 import 'react-native-gesture-handler';
 
 const MusicRoute = artigoPage;
@@ -74,12 +76,14 @@ export const Main = () => {
         {/* <Appbar.BackAction onPress={() => {}} /> */}
         <Appbar.Content title={'Lura'} />
 
-    {/*     <IconButton
-          icon="search"
-          color="#000000"
-          size={30}
-        /> */}
-         <Avatar.Icon size={30} icon="account" />
+         <Avatar.Icon size={35} icon="account" />
+        <IconButton
+        containerColor={useTheme().colors.primary}
+        onPress={()=> { dispatch(userAction.setAccount( null )) }}
+          icon="logout"
+         
+          size={20}
+        />
       </Appbar.Header>
 
       <View style={styles.mainConstainer}>
