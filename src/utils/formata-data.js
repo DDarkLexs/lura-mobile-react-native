@@ -18,3 +18,26 @@ export const formatarData = data => {
 
   return dataFormatada;
 };
+
+export const formatarDataSimples = data => {
+  // Verifica se a data fornecida é válida
+  if (!moment(data, 'DD/MM/YYYY').isValid()) {
+    return 'Data inválida';
+  }
+
+  // Formata a data no formato desejado
+  const dataFormatada = moment(data, 'DD/MM/YYYY').format('L');
+
+  return dataFormatada;
+};
+
+export const DataExpirou = expirationDate => {
+  const currentDate = moment(); // Data atual
+  const expiration = moment(expirationDate, 'DD-MM-YYYY');
+
+  if (expiration.isBefore(currentDate)) {
+    return expiration.isBefore(currentDate);
+  } else {
+    return expiration.isBefore(currentDate);
+  }
+};

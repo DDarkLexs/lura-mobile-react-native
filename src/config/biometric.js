@@ -15,7 +15,7 @@ export const generateBioauth = async () => {
           promptMessage: 'Entrar com Touch ID',
           cancelButtonText: 'fechar',
         });
-        console.log(response);
+        // console.log(response);
 
         resolve(response);
       }

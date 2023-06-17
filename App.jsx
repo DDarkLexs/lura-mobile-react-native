@@ -13,12 +13,20 @@ const App = () => {
   
   
    const firstStep = async () => {
+    try {
+      setLoading(true)
+      
+      await db.createTables()
+      
+    } catch (error) {
+      
+    } finally {
 
-    setLoading(true)
+      setLoading(false)
+
+    }
+
     
-    await db.createTables()
-    
-    setLoading(false)
   }
 
   useEffect(()=>{

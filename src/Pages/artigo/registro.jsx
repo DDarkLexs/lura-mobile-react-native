@@ -18,6 +18,7 @@ import {insertNew} from '../../controller/artigo';
 import {ToastAndroid} from 'react-native';
 import {actions as artigoActions} from '../../store/reducers/artigo';
 
+
 export const CadastroSection = () => {
   const theme = useTheme();
   const [nome, setNome] = useState('');
@@ -30,6 +31,7 @@ export const CadastroSection = () => {
 
   const propiedade = {nome, categoria, preco, descricao};
   const loading = useSelector(state => state.artigo.loading);
+  const { id_usuario } = useSelector(state => state.usuario.account);
 
   /* ==================================================== */
   const [visible, setVisible] = useState(false);
@@ -42,27 +44,44 @@ export const CadastroSection = () => {
   const registrar = async () => {
     try {
       dispatch(artigoActions.setLoading(true));
-
       
-      const response = await insertNew(propiedade);
+      
+      const response = (await insertNew(propiedade, id_usuario));
+      
+      dispatch(artigoActions.setLoading(false));
+
 
       swal.showAlertWithOptions({
         title: 'sucesso',
         subTitle: `${propiedade.nome} foi guardado!`,
         confirmButtonTitle: 'OK',
         confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancel',
+        otherButtonTitle: 'Cancelar',
         otherButtonColor: '#dedede',
         style: 'success',
         cancellable: true,
         // onConfirm: () => console.log('Confirmed'),
         // onCancel: () => console.log('Cancelled'),
       });
-      dispatch(artigoActions.setLoading(false));
     } catch (error) {
+      
+      swal.showAlertWithOptions({
+        title: 'Houve um erro',
+        subTitle: `${error}!`,
+        confirmButtonTitle: 'OK',
+        confirmButtonColor: '#000',
+        otherButtonTitle: 'Cancelar',
+        otherButtonColor: '#dedede',
+        style: 'error',
+        cancellable: true,
+        // onConfirm: () => console.log('Confirmed'),
+        // onCancel: () => console.log('Cancelled'),
+      });
+
+      // ToastAndroid.show(`Houve um erro: ${error}`, ToastAndroid.LONG);
+    } finally {
       dispatch(artigoActions.setLoading(false));
 
-      ToastAndroid.show(`Houve um erro: ${error}`, ToastAndroid.LONG);
     }
   };
 
@@ -92,7 +111,7 @@ export const CadastroSection = () => {
         disabled={loading}
         onChangeText={text => setPreco(text)}
         mode="outlined"
-        keyboardType="decimal-pad"
+        keyboardType="numeric"
       />
       <HelperText type="info" visible={true}>
         {formatCurrency(preco)}

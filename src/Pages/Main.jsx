@@ -22,20 +22,15 @@ import {useSelector, useStore, useDispatch} from 'react-redux';
 import { CadastroSection } from './artigo/registro';
 import { ArtigoListItem as artigoPage  } from './artigo/ListItem';
 import { ProfileScreen } from './ProfileScreen';
+import { QualidadePage } from './Qualidade/todo';
 import {  BiometricsScreen } from '../components/biometrico';
 import {actions as routeAction} from '../store/reducers/routes';
 import {actions as userAction} from '../store/reducers/usuario';
 import 'react-native-gesture-handler';
 
-const MusicRoute = artigoPage;
 
 const AlbumsRoute = () => <Text>Albums</Text>;
 
-const RecentsRoute = () => 
-  <View>
-  <BiometricsScreen/>
- 
-  </View>;
 
 export const Main = () => {
   const [index, setIndex] = useState(0);
@@ -46,25 +41,20 @@ export const Main = () => {
       focusedIcon: 'archive',
       unfocusedIcon: 'archive-outline',
     },
-    {key: 'add', title: 'Adicionar', focusedIcon: 'archive-plus' ,unfocusedIcon: 'archive-plus-outline', },
-    {key: 'recents', title: 'Recents', focusedIcon: 'history'},
+    // {key: 'add', title: 'Adicionar', focusedIcon: 'archive-plus' ,unfocusedIcon: 'archive-plus-outline' },
+    { key: 'qualidade', title: 'qualidades', focusedIcon: 'clipboard-text-clock', unfocusedIcon: 'clipboard-text-clock-outline' },
     {
-      key: 'usuario',
-      title: 'usuário',
-      focusedIcon: 'account',
-      
-      unfocusedIcon: 'account-outline',
+      key: 'usuario', title: 'usuário', focusedIcon: 'account', unfocusedIcon: 'account-outline',
     },
   ]);
 
   const renderScene = BottomNavigation.SceneMap({
     artigo: artigoPage,
-    add: CadastroSection,
-    recents: RecentsRoute,
+    // add: CadastroSection,
+    qualidade: QualidadePage,
     usuario: ProfileScreen,
   });
-  //   const theme = useTheme()
-  //   const store = useStore().getState()
+
   const page = useSelector(state => state.routes.page);
 
   const dispatch = useDispatch();
@@ -81,6 +71,7 @@ export const Main = () => {
         containerColor={useTheme().colors.primary}
         onPress={()=> { dispatch(userAction.setAccount( null )) }}
           icon="logout"
+          iconColor='white'
          
           size={20}
         />
