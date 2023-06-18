@@ -38,31 +38,33 @@ import {
   deleteQualidadeById,
 } from '../../controller/qualidade';
 import {NotFoundPage} from '../../components/NotFoundQualidade';
+import DialogInfo from '../../components/qualidade/info';
 import swal from 'react-native-sweet-alert';
-export const QualidadePage = navigation => {
+export const QualidadePage = () => {
+  
   const [searchQuery, setSearchQuery] = useState('');
-  const [data, setData] = useState([]);
-
   const [dialogVisible, setDialogVisible] = useState(false);
   const [inicio, setInicio] = useState('');
   const [expira, setExpira] = useState('');
+  const [item, setItem] = useState({});
+  
+  const data = useSelector(state => state.artigo.qualidades);
   const loading = useSelector(state => state.artigo.loading);
   const artigos = useSelector(state => state.artigo.items);
   const id_produto = useSelector(state => state.artigo.id_produto);
+  const showDialog = useSelector(state => state.artigo.qualidadeDialog);
   const dispatch = useDispatch();
 
   const artigo = artigos.filter(item => item.id_produto === id_produto)[0];
 
   const handleSearch = query => {
     setSearchQuery(query);
-
     // Filter data based on search query
     const filteredData = data.filter(item =>
       item.name.toLowerCase().includes(query.toLowerCase()),
     );
-
-    // Update the data to display filtered results
-    setData(filteredData);
+    // Update the data to display filtered result
+    dispatch(filteredData.setQualidades(query));
   };
 
   const openDialog = () => {
@@ -76,7 +78,6 @@ export const QualidadePage = navigation => {
   const handleSave = async () => {
     try {
       dispatch(actions.setLoading(true));
-
       // Perform save operation with the values of "inicio" and "expira"
       // You can add your logic here to save the values
       await insertQualidade({inicio, expira, id_produto});
@@ -139,11 +140,12 @@ export const QualidadePage = navigation => {
   const get = async id_produto => {
     try {
       dispatch(actions.setLoading(true));
-
+      
       const query = await getQualidadebyIdProduto(id_produto);
-
-      setData(query);
+      
+      dispatch(actions.setQualidades(query));
     } catch (error) {
+      console.log(error)
       swal.showAlertWithOptions({
         title: 'Houve um erro',
         subTitle: `${error}`,
@@ -161,10 +163,12 @@ export const QualidadePage = navigation => {
     }
   };
 
-  // get(id_produto)
   useEffect(() => {
+    console.log("mounted")
     get(id_produto);
-  }, []);
+    
+  }, [id_produto]);
+
 
   return (
     <View style={styles.container}>
@@ -194,6 +198,8 @@ export const QualidadePage = navigation => {
             </Button>
           </View>
 
+        
+
           <View style={styles.containerSearch}>
             <Searchbar
               placeholder={artigo.nome}
@@ -210,8 +216,14 @@ export const QualidadePage = navigation => {
               <DataTable.Title> </DataTable.Title>
             </DataTable.Header>
 
+            <DialogInfo item={ item } artigo={ artigo } />
             {data.map((item, i) => (
-              <DataTable.Row key={item.id_qualidade}>
+              <DataTable.Row  
+              onPress={() => {
+                setItem(item)
+                dispatch(actions.setqualidadeDialog(!showDialog))
+              } } 
+              key={item.id_qualidade}>
                 <DataTable.Cell>
                   {formatarDataSimples(item.inicio)}
                 </DataTable.Cell>

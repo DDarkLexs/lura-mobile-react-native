@@ -7,7 +7,8 @@ export const insertQualidade = (qualidade, id_produto) => {
 
         qualidade.datacad = moment().format();
 
-      const id_qualidade = (await knex('qualidade').insert(qualidade))[0];
+      const id_qualidade = (await knex('qualidade')
+      .insert(qualidade))[0];
 
       resolve(id_qualidade);
 

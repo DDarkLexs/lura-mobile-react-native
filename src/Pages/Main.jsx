@@ -16,24 +16,23 @@ import {
   useTheme,
   BottomNavigation,
   Divider,
-  
+  FAB,
+  Portal,
 } from 'react-native-paper';
 import {useSelector, useStore, useDispatch} from 'react-redux';
-import { CadastroSection } from './artigo/registro';
-import { ArtigoListItem as artigoPage  } from './artigo/ListItem';
-import { ProfileScreen } from './ProfileScreen';
-import { QualidadePage } from './Qualidade/todo';
-import {  BiometricsScreen } from '../components/biometrico';
+import {CadastroSection} from './artigo/registro';
+import {ArtigoListItem as artigoPage} from './artigo/ListItem';
+import {Painel} from './Painel';
+import {QualidadePage} from './Qualidade/todo';
+import {BiometricsScreen} from '../components/biometrico';
 import {actions as routeAction} from '../store/reducers/routes';
 import {actions as userAction} from '../store/reducers/usuario';
 import 'react-native-gesture-handler';
-
-
-const AlbumsRoute = () => <Text>Albums</Text>;
-
+import {actions as artigoActions} from '../store/reducers/artigo';
 
 export const Main = () => {
   const [index, setIndex] = useState(0);
+  const [state, setState] = useState({open: false});
   const [routes] = React.useState([
     {
       key: 'artigo',
@@ -42,47 +41,97 @@ export const Main = () => {
       unfocusedIcon: 'archive-outline',
     },
     // {key: 'add', title: 'Adicionar', focusedIcon: 'archive-plus' ,unfocusedIcon: 'archive-plus-outline' },
-    { key: 'qualidade', title: 'qualidades', focusedIcon: 'clipboard-text-clock', unfocusedIcon: 'clipboard-text-clock-outline' },
     {
-      key: 'usuario', title: 'usuário', focusedIcon: 'account', unfocusedIcon: 'account-outline',
+      key: 'qualidade',
+      title: 'qualidades',
+      focusedIcon: 'clipboard-text-clock',
+      unfocusedIcon: 'clipboard-text-clock-outline',
+    },
+    {
+      key: 'Painel',
+      title: 'Painel',
+      focusedIcon: 'view-dashboard',
+      unfocusedIcon: 'view-dashboard-outline',
     },
   ]);
+
+  const onStateChange = ({open}) => setState({open});
+  const {open} = state;
 
   const renderScene = BottomNavigation.SceneMap({
     artigo: artigoPage,
     // add: CadastroSection,
     qualidade: QualidadePage,
-    usuario: ProfileScreen,
+    Painel: Painel,
   });
 
   const page = useSelector(state => state.routes.page);
+  const artigoAddDialog = useSelector(state => state.artigo.artigoAddDialog);
 
   const dispatch = useDispatch();
-
 
   return (
     <View style={{flex: 1}}>
       <Appbar.Header>
         {/* <Appbar.BackAction onPress={() => {}} /> */}
-        <Appbar.Content title={'Lura'} />
+        <Appbar.Content title={'Lura'} mode="medium" color="white" />
 
-         <Avatar.Icon size={35} icon="account" />
-        <IconButton
-        containerColor={useTheme().colors.primary}
-        onPress={()=> { dispatch(userAction.setAccount( null )) }}
-          icon="logout"
-          iconColor='white'
-         
-          size={20}
-        />
+        <Avatar.Icon size={40} style={{marginRight: 5}} icon="account" />
       </Appbar.Header>
 
       <View style={styles.mainConstainer}>
+        <Portal>
+          <FAB.Group
+            style={{marginBottom: 80}}
+            open={open}
+            visible
+            color={'white'}
+            fabStyle={{backgroundColor: useTheme().colors.primary}}
+            variant={'primary'}
+            icon={open ? 'close' : 'plus'}
+            actions={[
+              {
+                icon: 'archive-plus',
+                label: 'Adicionar Artigo',
+                color: 'white',
+                style: {
+                  backgroundColor: useTheme().colors.primary,
+                },
+                onPress: () => {
+                  dispatch(artigoActions.setArtigoAddDialog(true));
+                },
+              },
+              /*        {
+              icon: 'star',
+              label: 'Star',
+              onPress: () => console.log('Pressed star'),
+
+            },
+ */
+              {
+                icon: 'logout',
+                label: 'Terminar sessão',
+                onPress: () => dispatch(userAction.setAccount(null)),
+                color: 'white',
+                style: {
+                  backgroundColor: useTheme().colors.primary,
+                },
+              },
+            ]}
+            onStateChange={onStateChange}
+            onPress={() => {
+              if (open) {
+                // do something if the speed dial is open
+              }
+            }}
+          />
+        </Portal>
         <BottomNavigation
           navigationState={{index, routes}}
           // barStyle={ { backgroundColor:useTheme().colors.primary  } }
           onIndexChange={setIndex}
-          renderScene={renderScene} />
+          renderScene={renderScene}
+        />
       </View>
     </View>
   );

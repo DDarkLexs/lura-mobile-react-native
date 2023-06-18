@@ -22,7 +22,7 @@ import {useSelector, useDispatch} from 'react-redux';
 import {DataTable, Button} from 'react-native-paper';
 import {deleteArtigo} from '../../utils/database';
 import {deleteArigoById, getAllartigoByUserId} from '../../controller/artigo';
-import {actions as artigoActions} from '../../store/reducers/artigo';
+import {actions, actions as artigoActions} from '../../store/reducers/artigo';
 import {CadastroSection} from '../artigo/registro';
 import {QualidadePage} from '../Qualidade/todo';
 import {formatCurrency} from '../../utils/currency';
@@ -144,7 +144,7 @@ export const ArtigoListItem = navigation => {
               textColor="white"
               loading={loading}
               disabled={loading}
-              onPress={showDialog}
+              // onPress={ () =>{ dispatch(actions.setArtigoAddDialog(true)) } }
               style={{marginRight: 10}}
               // loading={true}
               buttonColor={useTheme().colors.primary}>
@@ -160,14 +160,8 @@ export const ArtigoListItem = navigation => {
               {!loading ? 'atualizar' : 'atualizando'}
             </Button>
           </View>
-          <Portal>
-            <Dialog visible={visible} onDismiss={hideDialog}>
-              <Dialog.Title> Cadastro de artigo </Dialog.Title>
-              <Dialog.Content>
                 <CadastroSection />
-              </Dialog.Content>
-            </Dialog>
-          </Portal>
+          
         </View>
         <View style={styles.containerSearch}>
          {/*  <Searchbar

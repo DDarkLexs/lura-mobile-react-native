@@ -12,6 +12,8 @@ import {
   Menu,
   ActivityIndicator,
   HelperText,
+  Portal,
+  Dialog,
 } from 'react-native-paper';
 import {useSelector, useStore, useDispatch} from 'react-redux';
 import {insertNew} from '../../controller/artigo';
@@ -25,16 +27,22 @@ export const CadastroSection = () => {
   const [categoria, setCategoria] = useState('');
   const [preco, setPreco] = useState(0);
   const [descricao, setDescricao] = useState('');
+  const dispatch = useDispatch();
+
+  const showDialog = () => setVisible(true);
+
+  const hideDialog = () => dispatch(artigoActions.setArtigoAddDialog(false));
 
   // const store = useStore().getState();
-  const dispatch = useDispatch();
 
   const propiedade = {nome, categoria, preco, descricao};
   const loading = useSelector(state => state.artigo.loading);
+  const show = useSelector(state => state.artigo.artigoAddDialog);
   const { id_usuario } = useSelector(state => state.usuario.account);
 
   /* ==================================================== */
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(true);
+
 
   const handleMenuItemPress = item => {
     setSelectedItem(item);
@@ -86,7 +94,10 @@ export const CadastroSection = () => {
   };
 
   return (
-    <View>
+      <Portal>
+      <Dialog visible={show} onDismiss={hideDialog}>
+        <Dialog.Title> Cadastro de artigo </Dialog.Title>
+        <Dialog.Content>
       <TextInput
         label={'Nome'}
         keyboardType="default"
@@ -134,8 +145,10 @@ export const CadastroSection = () => {
         buttonColor={theme.colors.primary}>
         Registrar
       </Button>
-      {/* <ActivityIndicator color='white' /> */}
-    </View>
+              </Dialog.Content>
+            </Dialog>
+          </Portal>
+
   );
 };
 const styles = StyleSheet.create({
