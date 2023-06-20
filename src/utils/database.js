@@ -182,7 +182,7 @@ const dropAllTable =  () => {
 export const deleteArtigo = id_produto => {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await await knex('produto')
+      const response = await knex('produto')
         .where('id_produto', id_produto)
         .del();
       resolve(response);

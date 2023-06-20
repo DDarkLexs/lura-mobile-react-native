@@ -21,8 +21,9 @@ import {
 } from 'react-native-paper';
 import {useSelector, useStore, useDispatch} from 'react-redux';
 import {CadastroSection} from './artigo/registro';
-import {ArtigoListItem as artigoPage} from './artigo/ListItem';
-import {Painel} from './Painel';
+import {ArtigoListItem as ArtigoListPage} from './artigo/ListItem';
+import {Painel} from './Painel/Painel';
+import { Vigencia } from './Vigencia/index';
 import {QualidadePage} from './Qualidade/todo';
 import {BiometricsScreen} from '../components/biometrico';
 import {actions as routeAction} from '../store/reducers/routes';
@@ -33,6 +34,8 @@ import {actions as artigoActions} from '../store/reducers/artigo';
 export const Main = () => {
   const [index, setIndex] = useState(0);
   const [state, setState] = useState({open: false});
+  const onStateChange = ({open}) => setState({open});
+  
   const [routes] = React.useState([
     {
       key: 'artigo',
@@ -40,12 +43,17 @@ export const Main = () => {
       focusedIcon: 'archive',
       unfocusedIcon: 'archive-outline',
     },
-    // {key: 'add', title: 'Adicionar', focusedIcon: 'archive-plus' ,unfocusedIcon: 'archive-plus-outline' },
     {
       key: 'qualidade',
       title: 'qualidades',
       focusedIcon: 'clipboard-text-clock',
       unfocusedIcon: 'clipboard-text-clock-outline',
+    },
+    {
+      key: 'vigencia',
+      title: 'Vigência',
+      focusedIcon: 'clipboard-flow',
+      unfocusedIcon: 'clipboard-flow-outline' 
     },
     {
       key: 'Painel',
@@ -55,13 +63,13 @@ export const Main = () => {
     },
   ]);
 
-  const onStateChange = ({open}) => setState({open});
+
   const {open} = state;
 
   const renderScene = BottomNavigation.SceneMap({
-    artigo: artigoPage,
-    // add: CadastroSection,
+    artigo: ArtigoListPage,
     qualidade: QualidadePage,
+    vigencia: Vigencia,
     Painel: Painel,
   });
 

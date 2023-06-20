@@ -6,34 +6,9 @@ import App from './App';
 import { Provider } from 'react-redux';
 import { store } from './src/store/index'
 import { theme } from './src/theme/index';
-
-// import {createStore} from 'redux';
-
-// const reducer = (state = {count: 0}, action) => {
-//   switch (action.type) {
-//     case 'INCREMENT':
-//       return {
-//         count: state.count + 1,
-//       };
-//       break;
-//     case 'DECREMENT':
-//       return {
-//         count: state.count - 1,
-//       };
-
-//     default:
-//       return state;
-//       break;
-//   }
-// };
-
-// const store = createStore(reducer);
-
-// store.dispatch({ type:"INCREMENT"})
-
+import { knex } from './src/utils/database'
 export default function Main() {
-  const colorTheme =
-    useColorScheme() === 'dark'
+  const colorTheme = useColorScheme() === 'dark'
       ? {
           ...MD3DarkTheme.colors,
           colors: {
@@ -42,7 +17,9 @@ export default function Main() {
             secondary: '#8c9eff',
           },
         }
-      : {
+      :
+      
+      {
           ...MD3LightTheme.colors,
           colors: {
             ...MD3LightTheme.colors,

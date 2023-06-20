@@ -1,14 +1,13 @@
-import { knex } from '../utils/database';
+import {knex} from '../utils/database';
 
 export const loginUserAuto = () => {
   return new Promise(async (resolve, reject) => {
     try {
-        const query = (await knex("usuario")
-        .select("*"))[0]
+      const query = (await knex('usuario').select('*'))[0];
 
-        if(!query) throw "O nome ou a palavra-passe está incorreto"
+      if (!query) throw 'O nome ou a palavra-passe está incorreto';
 
-        resolve(query)
+      resolve(query);
     } catch (error) {
       reject(error);
     }
@@ -17,17 +16,18 @@ export const loginUserAuto = () => {
 export const loginUser = credencial => {
   return new Promise(async (resolve, reject) => {
     try {
-        const query = (await knex("usuario")
-        .select("*")
-        .where("nome","=",credencial.nome)
-        .andWhere("senha","=",credencial.password))[0]
+      const query = (
+        await knex('usuario')
+          .select('*')
+          .where('nome', '=', credencial.nome)
+          .andWhere('senha', '=', credencial.password)
+      )[0];
 
-        if(!query) throw "O nome ou a palavra-passe está incorreto"
+      if (!query) throw 'O nome ou a palavra-passe está incorreto';
 
-        resolve(query)
+      resolve(query);
     } catch (error) {
       reject(error);
     }
   });
 };
-
