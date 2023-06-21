@@ -13,7 +13,7 @@ export const getAllartigoByUserId = id_usuario => {
           'notaDeProduto.id_produto',
           'produto.id_produto',
         )
-      .where('notaDeProduto.id_usuario', id_usuario);
+        .where('notaDeProduto.id_usuario', id_usuario);
       // .innerJoin('notaDeProduto')
       // .where('id_usuario', '=', id_usuario);
       // console.log(artigos);
@@ -59,6 +59,37 @@ export const deleteArigoById = id_produto => {
     try {
       const result = await deleteArtigo(id_produto);
       resolve(result);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getAllartigoByValidade = id_usuario => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await knex
+        .from('produto')
+        .select(
+          knex.raw(`
+        id_qualidade,
+        produto.nome as nome,
+        inicio,  
+        expira
+        `),
+        )
+        .from('produto')
+        .innerJoin(
+          'notaDeProduto',
+          'notaDeProduto.id_produto',
+          'produto.id_produto',
+        )
+        .innerJoin('qualidade', 'qualidade.id_produto', 'produto.id_produto')
+        .groupBy('id_qualidade')
+        .where('notaDeProduto.id_usuario', id_usuario);
+      // response
+
+      resolve(response);
     } catch (error) {
       reject(error);
     }

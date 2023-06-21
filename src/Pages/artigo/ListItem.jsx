@@ -21,10 +21,10 @@ import {
 import {useSelector, useDispatch} from 'react-redux';
 import {DataTable, Button} from 'react-native-paper';
 import {deleteArtigo} from '../../utils/database';
-import {deleteArigoById, getAllartigoByUserId} from '../../controller/artigo';
-import {actions, actions as artigoActions} from '../../store/reducers/artigo';
 import {CadastroSection} from '../artigo/registro';
 import {QualidadePage} from '../Qualidade/todo';
+import {deleteArigoById, getAllartigoByUserId} from '../../controller/artigo';
+import {actions, actions as artigoActions} from '../../store/reducers/artigo';
 import {formatCurrency} from '../../utils/currency';
 import swal from 'react-native-sweet-alert';
 
@@ -37,6 +37,7 @@ export const ArtigoListItem = navigation => {
   const items = useSelector(state => state.artigo.items);
   const loading = useSelector(state => state.artigo.loading);
   const {id_usuario} = useSelector(state => state.usuario.account);
+  const theme = useTheme();
   const dispatch = useDispatch();
 
   const showDialog = () => setVisible(true);
@@ -147,7 +148,7 @@ export const ArtigoListItem = navigation => {
               // onPress={ () =>{ dispatch(actions.setArtigoAddDialog(true)) } }
               style={{marginRight: 10}}
               // loading={true}
-              buttonColor={useTheme().colors.primary}>
+              buttonColor={theme.colors.primary}>
               {'adicionar'}
             </Button>
             <Button
@@ -156,7 +157,7 @@ export const ArtigoListItem = navigation => {
               disabled={loading}
               onPress={() => get()}
               // loading={true}
-              buttonColor={useTheme().colors.primary}>
+              buttonColor={theme.colors.primary}>
               {!loading ? 'atualizar' : 'atualizando'}
             </Button>
           </View>

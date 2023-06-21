@@ -7,6 +7,19 @@ const dataAtual = moment();
 // Formatando a data no formato desejado
 export const dataFormatada = dataAtual.format('LL');
 
+export const formatarDefault = data => {
+  // Verifica se a data fornecida é válida
+  if (!moment(data, 'DD/MM/YYYY').isValid()) {
+    return 'Data inválida';
+}
+
+  // Formata a data no formato desejado
+  const dataFormatada = moment(data, 'DD/MM/YYYY').format('DD-MM-YYYY');
+
+  return dataFormatada;
+};
+
+
 export const formatarData = data => {
   // Verifica se a data fornecida é válida
   if (!moment(data, 'DD/MM/YYYY').isValid()) {
@@ -27,6 +40,19 @@ export const formatarDataLongo = data => {
 
   // Formata a data no formato desejado
   const dataFormatada = moment(data, 'DD/MM/YYYY').format('LL');
+
+  return dataFormatada;
+};
+
+
+export const formatarDataMid = data => {
+  // Verifica se a data fornecida é válida
+  if (!moment(data, 'DD/MM/YYYY').isValid()) {
+    return 'Data inválida';
+  }
+
+  // Formata a data no formato desejado
+  const dataFormatada = moment(data, 'DD/MM/YYYY').format('DD MMM YYYY');
 
   return dataFormatada;
 };

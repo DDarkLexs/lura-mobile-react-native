@@ -5,12 +5,16 @@ const artigoSlice = createSlice({
   initialState: {
     items: [],
     qualidades: [],
+    artigosValidade:[],
     loading: false,
     id_produto: null,
     artigoAddDialog:  false,
     qualidadeDialog:  false,
   },
   reducers: {
+    setArtigosValidade: (state, action) => {
+      state.artigosValidade = action.payload;
+    },
     setArtigoAddDialog: (state, action) => {
       state.artigoAddDialog = action.payload;
     },

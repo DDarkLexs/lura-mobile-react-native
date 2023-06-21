@@ -1,48 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, StyleSheet, Switch,View } from 'react-native';
-import { DataTable } from 'react-native-paper';
+import React, {useState, useEffect} from 'react';
+import {ScrollView, Text, StyleSheet, Switch, View} from 'react-native';
+import {DataTable,Badge, useTheme,Button} from 'react-native-paper';
+import {getAllartigoByValidade} from '../../controller/artigo';
+import {actions as artigoActions} from '../../store/reducers/artigo';
+import {formatCurrency} from '../../utils/currency';
+import {useDispatch, useSelector} from 'react-redux';
+import { DataExpirou,formatarDataMid } from '../../utils/formata-data';
+import swal from 'react-native-sweet-alert';
+import InfoValidade from '../../components/qualidade/info'
 
-const data = [
-  { nome: 'Item 1', dataValidade: '01/01/2023', expirado: false },
-  { nome: 'Item 2', dataValidade: '02/02/2023', expirado: true },
-  // Adicione mais objetos de dados conforme necessário
-  // ...
-];
 
 export const Vigencia = () => {
+  const data = useSelector(state => state.artigo.artigosValidade);
+
   const [filteredData, setFilteredData] = useState(data);
   const [showExpired, setShowExpired] = useState(true);
+  const {id_usuario} = useSelector(state => state.usuario.account);
+  const showDialog = useSelector(state => state.artigo.qualidadeDialog);
+  const loading = useSelector(state => state.artigo.loading);
 
+  const theme = useTheme();
+  const dispatch = useDispatch();
   const handleFilter = filterQuery => {
     const lowerCaseQuery = filterQuery.toLowerCase();
     const filteredItems = data.filter(item =>
-      item.nome.toLowerCase().includes(lowerCaseQuery)
+      item.nome.toLowerCase().includes(lowerCaseQuery),
     );
     setFilteredData(filteredItems);
   };
+
+  const getArtigos = async () => {
+    try {
+    dispatch(artigoActions.setLoading(true));
+    const response = await getAllartigoByValidade(id_usuario)
+    const artigos = response.map(item => {
+        Object.assign(item, {expirado: DataExpirou(item.expira)})        
+        return item
+    })
+
+    dispatch(artigoActions.setArtigosValidade(artigos));
+    } catch (error) {
+      swal.showAlertWithOptions({
+        title: 'Houve um erro!',
+        subTitle: `${error}`,
+        confirmButtonTitle: 'OK',
+        confirmButtonColor: '#000',
+        otherButtonTitle: 'Cancel',
+        otherButtonColor: '#dedede',
+        style: 'error',
+        cancellable: true,
+        onConfirm: () => console.log('Confirmed'),
+        onCancel: () => console.log('Cancelled'),
+      });
+    } finally {
+      dispatch(artigoActions.setLoading(false));
+    };
+    }
 
   const handleToggleSwitch = () => {
     setShowExpired(!showExpired);
   };
 
   useEffect(() => {
-    const filteredItems = showExpired
-      ? data.filter(item => item.expirado)
-      : data.filter(item => !item.expirado);
+    getArtigos();
+}, []);
 
-    setFilteredData(filteredItems);
-  }, [showExpired]);
+useEffect(() => {
+    const work = (async ()=> {
+        // getArtigos()
+        const filteredItems = showExpired
+          ? data.filter(item => item.expirado)
+          : data.filter(item => !item.expirado);
+        setFilteredData(filteredItems);
+
+    })
+    work()
+  }, [data,showExpired]);
+
+
+  /* test */
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(true);
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowPicker(false);
+    setDate(currentDate);
+    // Do something with the selected date
+  };
+
+  const showDateTimePicker = () => {
+    setShowPicker(true);
+  };
 
   return (
     <ScrollView style={styles.container}>
-        <View style={styles.switch}>
-
-      <Switch
-        
+       <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+      <View style={styles.switch}>
+        <Switch 
+        disabled={loading}
         value={showExpired}
-        onValueChange={handleToggleSwitch}
-        />
-        </View>
+        onValueChange={handleToggleSwitch} />
+      </View>
+            
+            <Button
+              textColor="white"
+              disabled={loading}
+              loading={loading}
+              buttonColor={theme.colors.primary}
+              onPress={() => {
+               getArtigos();
+              }}>
+              Atualizar
+            </Button>
+          </View>
+    
 
       <DataTable>
         <DataTable.Header>
@@ -52,20 +124,34 @@ export const Vigencia = () => {
         </DataTable.Header>
 
         {filteredData.map(item => (
-          <DataTable.Row key={item.nome}>
+          <DataTable.Row 
+          onLongPress={()=>{
+            dispatch(artigoActions.setqualidadeDialog(!showDialog))
+          }
+          }
+          key={item.id_qualidade}>
+            <InfoValidade item={ item } artigo={ item }/>
             <DataTable.Cell>{item.nome}</DataTable.Cell>
-            <DataTable.Cell>{item.dataValidade}</DataTable.Cell>
+            <DataTable.Cell>{formatarDataMid(item.expira)}</DataTable.Cell>
             <DataTable.Cell>
-              {item.expirado ? 'Expirado' : 'Válido'}
+            <Badge 
+            style={{ 
+            borderRadius: 10,
+            marginRight: 5,
+            color:'white',
+            backgroundColor:item.expirado ? 'red' : '#34a853'
+             }} size={25}>
+                {item.expirado ? 'Expirado' : 'Válido'}
+            </Badge>
             </DataTable.Cell>
           </DataTable.Row>
         ))}
 
         <DataTable.Pagination
-          totalItems={filteredData.length}
+         /*  totalItems={filteredData.length}
           itemsPerPage={10}
           onChangePage={page => console.log(page)}
-          label="1-10 de 20"
+          label="1-10 de 20" */
         />
       </DataTable>
     </ScrollView>

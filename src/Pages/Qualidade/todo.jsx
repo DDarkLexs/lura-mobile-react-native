@@ -31,6 +31,8 @@ import {
   dataFormatada,
   formatarDataSimples,
   DataExpirou,
+  formatarDefault,
+  formatarDataLongo
 } from '../../utils/formata-data';
 import {
   insertQualidade,
@@ -40,13 +42,18 @@ import {
 import {NotFoundPage} from '../../components/NotFoundQualidade';
 import DialogInfo from '../../components/qualidade/info';
 import swal from 'react-native-sweet-alert';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+
 export const QualidadePage = () => {
-  
+  const theme = useTheme()
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [inicio, setInicio] = useState('');
-  const [expira, setExpira] = useState('');
+  const [inicio, setInicio] = useState(new Date());
+  const [expira, setExpira] = useState(new Date());
   const [item, setItem] = useState({});
+  const [showInicioPicker, setShowInicioPicker] = useState(false);
+  const [showExpiraPicker, setShowExpiraPicker] = useState(false);
   
   const data = useSelector(state => state.artigo.qualidades);
   const loading = useSelector(state => state.artigo.loading);
@@ -80,7 +87,10 @@ export const QualidadePage = () => {
       dispatch(actions.setLoading(true));
       // Perform save operation with the values of "inicio" and "expira"
       // You can add your logic here to save the values
-      await insertQualidade({inicio, expira, id_produto});
+      await insertQualidade({
+        inicio:formatarDefault(inicio), 
+        expira:formatarDefault(expira),
+        id_produto});
       // After saving, close the dialog and reset the values
       dispatch(actions.setLoading(false));
       swal.showAlertWithOptions({
@@ -94,8 +104,9 @@ export const QualidadePage = () => {
         cancellable: true,
       });
       setDialogVisible(false);
-      setInicio('');
-      setExpira('');
+      setInicio(new Date());
+      setExpira(new Date());
+      get()
     } catch (error) {
       swal.showAlertWithOptions({
         title: 'Houve um erro',
@@ -137,6 +148,8 @@ export const QualidadePage = () => {
       dispatch(actions.setLoading(false));
     }
   };
+
+
   const get = async id_produto => {
     try {
       dispatch(actions.setLoading(true));
@@ -163,6 +176,20 @@ export const QualidadePage = () => {
     }
   };
 
+  const handleInicioChange = (event, selectedDate) => {
+    const currentDate = new Date(selectedDate) || inicio;
+    setShowInicioPicker(false);
+    setInicio(currentDate);
+  };
+  
+  const handleExpiraChange = (event, selectedDate) => {
+  
+    const currentDate = new Date(selectedDate) || expira;
+    setShowExpiraPicker(false);
+    setExpira(currentDate);
+  
+  };
+
   useEffect(() => {
     console.log("mounted")
     get(id_produto);
@@ -182,7 +209,7 @@ export const QualidadePage = () => {
               style={{marginRight: 10}}
               disabled={loading}
               loading={loading}
-              buttonColor={useTheme().colors.primary}
+              buttonColor={theme.colors.primary}
               onPress={openDialog}>
               adicionar
             </Button>
@@ -190,16 +217,13 @@ export const QualidadePage = () => {
               textColor="white"
               disabled={loading}
               loading={loading}
-              buttonColor={useTheme().colors.primary}
+              buttonColor={theme.colors.primary}
               onPress={() => {
                 get(id_produto);
               }}>
               Atualizar
             </Button>
           </View>
-
-        
-
           <View style={styles.containerSearch}>
             <Searchbar
               placeholder={artigo.nome}
@@ -219,7 +243,7 @@ export const QualidadePage = () => {
             <DialogInfo item={ item } artigo={ artigo } />
             {data.map((item, i) => (
               <DataTable.Row  
-              onPress={() => {
+              onLongPress={() => {
                 setItem(item)
                 dispatch(actions.setqualidadeDialog(!showDialog))
               } } 
@@ -267,33 +291,58 @@ export const QualidadePage = () => {
             <Dialog visible={dialogVisible} onDismiss={closeDialog}>
               <Dialog.Title>Registrar</Dialog.Title>
               <Dialog.Content>
+
+              {showInicioPicker && (
+              <DateTimePicker
+                value={inicio}
+                mode="date"
+                is24Hour={false}
+                display="calendar"
+                onChange={handleInicioChange}
+              />
+            )}
                 <TextInput
                   label="Inicio"
+                  value={formatarDataLongo(inicio)}
                   placeholder="DD-MM-AAAA"
                   mode="outlined"
                   disabled={loading}
-                  value={inicio}
-                  keyboardType="numeric"
-                  onChangeText={setInicio}
+                  keyboardType="default"
+                  right={ <TextInput.Icon onPress={()=>setShowInicioPicker(true)}
+                    icon={'calendar'} name="calendario0" />}
                 />
-                <HelperText>{formatarData(inicio)}</HelperText>
+                <HelperText>{formatarDefault(inicio)}</HelperText>
+
+{/* ====================================================================================== */}
+       
+            {showExpiraPicker && (
+              <DateTimePicker
+                value={expira}
+                mode="date"
+                is24Hour={false}
+                display="calendar"
+                onChange={handleExpiraChange}
+              />
+            )}
+                
                 <TextInput
                   label="Expira"
                   disabled={loading}
                   placeholder="DD-MM-AAAA"
-                  keyboardType="numeric"
+                  keyboardType="default"
                   mode="outlined"
-                  value={expira}
-                  onChangeText={setExpira}
+                  value={formatarDataLongo(expira)}
+                  right={ <TextInput.Icon onPress={() => setShowExpiraPicker(true)} icon={'calendar'} name="calendario1" />}
                 />
-                <HelperText>{formatarData(expira)}</HelperText>
+                <HelperText>{formatarDefault(expira)}</HelperText>
+
               </Dialog.Content>
               <Dialog.Actions>
                 <Button
                   disabled={loading}
                   loading={loading}
                   textColor="white"
-                  buttonColor={useTheme().colors.primary}
+                  buttonColor={theme.colors.primary}
                   onPress={closeDialog}>
                   Cancelar
                 </Button>
@@ -301,7 +350,7 @@ export const QualidadePage = () => {
                   textColor="white"
                   disabled={loading}
                   loading={loading}
-                  buttonColor={useTheme().colors.primary}
+                  buttonColor={theme.colors.primary}
                   onPress={handleSave}>
                   Salvar
                 </Button>

@@ -45,7 +45,7 @@ export const Main = () => {
     },
     {
       key: 'qualidade',
-      title: 'qualidades',
+      title: 'validade',
       focusedIcon: 'clipboard-text-clock',
       unfocusedIcon: 'clipboard-text-clock-outline',
     },
