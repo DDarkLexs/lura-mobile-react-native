@@ -1,18 +1,15 @@
 import React, {useState, useEffect} from 'react';
-import {ScrollView, Text, StyleSheet, Switch, View} from 'react-native';
+import {ScrollView, Text, StyleSheet, Switch, View,Alert} from 'react-native';
 import {DataTable,Badge, useTheme,Button} from 'react-native-paper';
 import {getAllartigoByValidade} from '../../controller/artigo';
 import {actions as artigoActions} from '../../store/reducers/artigo';
 import {formatCurrency} from '../../utils/currency';
 import {useDispatch, useSelector} from 'react-redux';
 import { DataExpirou,formatarDataMid } from '../../utils/formata-data';
-import swal from 'react-native-sweet-alert';
-import InfoValidade from '../../components/qualidade/info'
 
 
 export const Vigencia = () => {
   const data = useSelector(state => state.artigo.artigosValidade);
-
   const [filteredData, setFilteredData] = useState(data);
   const [showExpired, setShowExpired] = useState(true);
   const {id_usuario} = useSelector(state => state.usuario.account);
@@ -40,18 +37,11 @@ export const Vigencia = () => {
 
     dispatch(artigoActions.setArtigosValidade(artigos));
     } catch (error) {
-      swal.showAlertWithOptions({
-        title: 'Houve um erro!',
-        subTitle: `${error}`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancel',
-        otherButtonColor: '#dedede',
-        style: 'error',
-        cancellable: true,
-        onConfirm: () => console.log('Confirmed'),
-        onCancel: () => console.log('Cancelled'),
-      });
+      Alert.alert(
+        'Houve um erro',
+        error,
+        [{ text: 'OK' }],
+        { cancelable: false });
     } finally {
       dispatch(artigoActions.setLoading(false));
     };
@@ -126,11 +116,11 @@ useEffect(() => {
         {filteredData.map(item => (
           <DataTable.Row 
           onLongPress={()=>{
+            dispatch(artigoActions.setInfoArtigoValidade({ ...item }))
             dispatch(artigoActions.setqualidadeDialog(!showDialog))
           }
           }
           key={item.id_qualidade}>
-            <InfoValidade item={ item } artigo={ item }/>
             <DataTable.Cell>{item.nome}</DataTable.Cell>
             <DataTable.Cell>{formatarDataMid(item.expira)}</DataTable.Cell>
             <DataTable.Cell>

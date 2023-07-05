@@ -1,5 +1,5 @@
 import React,{ useEffect, useState } from 'react';
-import { View, StatusBar,Appearance,StyleSheet, useColorScheme,ToastAndroid,PushNotification,ActivityIndicator, } from 'react-native';
+import { View, StatusBar,Appearance,StyleSheet, useColorScheme,ToastAndroid,PushNotification,ActivityIndicator,Vibration } from 'react-native';
 import {Text, Button , Appbar, IconButton ,useTheme } from 'react-native-paper'
 import { Main } from './src/Pages/Main'
 import BottomNav from './src/components/bottomNavigation'
@@ -56,8 +56,7 @@ const App = () => {
       <View style={ { flex:1 } }>
 
       {
-        !!account?
-        <Main /> : <Login />
+        !!account ? <Main /> : <Login />
       }
 
       </View>

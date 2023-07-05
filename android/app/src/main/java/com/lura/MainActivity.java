@@ -4,6 +4,10 @@ import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+import android.content.Intent;
+import android.os.Bundle;
+import com.lura.ControloDeValidade; // Substitua com o pacote correto para o seu serviço
+
 
 public class MainActivity extends ReactActivity {
 
@@ -15,6 +19,7 @@ public class MainActivity extends ReactActivity {
   protected String getMainComponentName() {
     return "lura";
   }
+
 
   /**
    * Returns the instance of the {@link ReactActivityDelegate}. Here we use a util class {@link
@@ -32,4 +37,18 @@ public class MainActivity extends ReactActivity {
         DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
         );
   }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    // ...
+
+    // Seu código para iniciar o serviço
+    Intent service = new Intent(getApplicationContext(), ControloDeValidade.class);
+    Bundle bundle = new Bundle();
+    bundle.putString("foo", "bar");
+    service.putExtras(bundle);
+    getApplicationContext().startService(service);
+  }
+
 }

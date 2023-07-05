@@ -8,6 +8,7 @@ import {
   ToastAndroid,
   PushNotification,
   ScrollView,
+  Alert
 } from 'react-native';
 import {
   Text,
@@ -28,8 +29,9 @@ import {useSelector, useDispatch} from 'react-redux';
 import {actions} from '../../store/reducers/artigo';
 import {
   formatarData,
-  dataFormatada,
-  formatarDataSimples,
+  dataFormatada, 
+  formatarDataSimples, 
+  formatarDataMid,
   DataExpirou,
   formatarDefault,
   formatarDataLongo
@@ -40,8 +42,6 @@ import {
   deleteQualidadeById,
 } from '../../controller/qualidade';
 import {NotFoundPage} from '../../components/NotFoundQualidade';
-import DialogInfo from '../../components/qualidade/info';
-import swal from 'react-native-sweet-alert';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 
@@ -93,33 +93,22 @@ export const QualidadePage = () => {
         id_produto});
       // After saving, close the dialog and reset the values
       dispatch(actions.setLoading(false));
-      swal.showAlertWithOptions({
-        title: 'sucesso',
-        subTitle: `foi guardado com sucesso!`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancelar',
-        otherButtonColor: '#dedede',
-        style: 'success',
-        cancellable: true,
-      });
+      Alert.alert(
+        'sucesso',
+        "foi guardado com sucesso!",
+        [{ text: 'OK' }],
+        { cancelable: false }
+      );
       setDialogVisible(false);
       setInicio(new Date());
       setExpira(new Date());
-      get()
+      get(id_produto)
     } catch (error) {
-      swal.showAlertWithOptions({
-        title: 'Houve um erro',
-        subTitle: `${error}!`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancel',
-        otherButtonColor: '#dedede',
-        style: 'error',
-        cancellable: true,
-        // onConfirm: () => console.log('Confirmed'),
-        // onCancel: () => console.log('Cancelled'),
-      });
+      Alert.alert(
+        'Houve um erro',
+        error,
+        [{ text: 'OK' }],
+        { cancelable: false });
     } finally {
       dispatch(actions.setLoading(false));
     }
@@ -130,19 +119,14 @@ export const QualidadePage = () => {
       dispatch(actions.setLoading(true));
 
       const query = await deleteQualidadeById(id_qualidade);
-      await get();
+      await get(id_produto);
+      Alert.alert(
+        'sucesso',
+        "Foi eliminado com sucesso!",
+        [{ text: 'OK' }],
+        { cancelable: false });
 
-      swal.showAlertWithOptions({
-        title: 'Foi eliminado com sucesso!',
-        //  subTitle: `${error}`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonColor: '#dedede',
-        style: 'success',
-        cancellable: true,
-        // onConfirm: () => console.log('Confirmed'),
-        // onCancel: () => console.log('Cancelled'),
-      });
+
     } catch (error) {
     } finally {
       dispatch(actions.setLoading(false));
@@ -158,19 +142,13 @@ export const QualidadePage = () => {
       
       dispatch(actions.setQualidades(query));
     } catch (error) {
-      console.log(error)
-      swal.showAlertWithOptions({
-        title: 'Houve um erro',
-        subTitle: `${error}`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancel',
-        otherButtonColor: '#dedede',
-        style: 'error',
-        cancellable: true,
-        // onConfirm: () => console.log('Confirmed'),
-        // onCancel: () => console.log('Cancelled'),
-      });
+     
+      Alert.alert(
+        'Houve um erro',
+        error,
+        [{ text: 'OK' }],
+        { cancelable: false }
+      );
     } finally {
       dispatch(actions.setLoading(false));
     }
@@ -240,19 +218,19 @@ export const QualidadePage = () => {
               <DataTable.Title> </DataTable.Title>
             </DataTable.Header>
 
-            <DialogInfo item={ item } artigo={ artigo } />
             {data.map((item, i) => (
               <DataTable.Row  
               onLongPress={() => {
                 setItem(item)
+                dispatch(actions.setInfoArtigoValidade({ ...item, ...artigo }))
                 dispatch(actions.setqualidadeDialog(!showDialog))
               } } 
               key={item.id_qualidade}>
                 <DataTable.Cell>
-                  {formatarDataSimples(item.inicio)}
+                  {formatarDataMid(item.inicio)}
                 </DataTable.Cell>
                 <DataTable.Cell>
-                  {formatarDataSimples(item.expira)}
+                  {formatarDataMid(item.expira)}
                 </DataTable.Cell>
                 <DataTable.Cell>
 

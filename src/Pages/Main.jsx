@@ -5,6 +5,8 @@ import {
   Appearance,
   ToastAndroid,
   ActivityIndicator,
+  Vibration,
+  Alert
 } from 'react-native';
 import {
   Avatar,
@@ -24,12 +26,13 @@ import {CadastroSection} from './artigo/registro';
 import {ArtigoListItem as ArtigoListPage} from './artigo/ListItem';
 import {Painel} from './Painel/Painel';
 import { Vigencia } from './Vigencia/index';
-import {QualidadePage} from './Qualidade/todo';
-import {BiometricsScreen} from '../components/biometrico';
+import {QualidadePage} from './ValidadePAge/todo';
+import {  ValidadeInfo } from '../components/ValidadeDialog/info';
 import {actions as routeAction} from '../store/reducers/routes';
 import {actions as userAction} from '../store/reducers/usuario';
 import 'react-native-gesture-handler';
 import {actions as artigoActions} from '../store/reducers/artigo';
+import { EditPerfilDialog } from '../components/PerfilEditDialog/index'
 
 export const Main = () => {
   const [index, setIndex] = useState(0);
@@ -86,6 +89,8 @@ export const Main = () => {
 
         <Avatar.Icon size={40} style={{marginRight: 5}} icon="account" />
       </Appbar.Header>
+      <ValidadeInfo />
+      <EditPerfilDialog />
 
       <View style={styles.mainConstainer}>
         <Portal>
@@ -94,9 +99,12 @@ export const Main = () => {
             open={open}
             visible
             color={'white'}
+            onLongPress={()=>{ 
+              // Vibration.cancel()//vibrate([1000,2000,10000],false)
+            }}
             fabStyle={{backgroundColor: useTheme().colors.primary}}
             variant={'primary'}
-            icon={open ? 'close' : 'plus'}
+            icon={open ? 'close' : 'menu'}
             actions={[
               {
                 icon: 'archive-plus',

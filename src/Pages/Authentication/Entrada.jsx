@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View,StyleSheet,ImageBackground } from 'react-native';
+import { View,StyleSheet,ImageBackground,Alert } from 'react-native';
 import { TextInput,  Button, Card,Avatar,Text ,HelperText } from 'react-native-paper';
 // import { generateAccessToken } from '../../config/jwt'
 import { useEffect } from 'react';
@@ -7,7 +7,6 @@ import {  generateBioauth } from '../../config/biometric';
 import {  loginUser,loginUserAuto } from '../../controller/usuario';
 import { generateAccessToken } from '../../config/jwt';
 import { actions } from '../../store/reducers/usuario'
-import swal from 'react-native-sweet-alert';
 import {useSelector, useDispatch} from 'react-redux';
 
 const LoginScreen = () => {
@@ -54,18 +53,14 @@ const LoginScreen = () => {
     } catch (error) {
       console.log(error)
       setLoading(false)
-      swal.showAlertWithOptions({
-        title: 'Houve um erro',
-        subTitle: `${error}!`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancel',
-        otherButtonColor: '#dedede',
-        style: 'error',
-        cancellable: true,
-        // onConfirm: () => console.log('Confirmed'),
-        // onCancel: () => console.log('Cancelled'),
-      });
+
+      Alert.alert(
+        'Houve um erro',
+        error,
+        [{ text: 'OK' }],
+        { cancelable: false }
+      );
+    
     }
   };
 

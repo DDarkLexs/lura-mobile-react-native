@@ -5,6 +5,7 @@ import {
   AlertButton,
   StyleSheet,
   ScrollView,
+  Alert
 } from 'react-native';
 import {
   Text,
@@ -22,11 +23,10 @@ import {useSelector, useDispatch} from 'react-redux';
 import {DataTable, Button} from 'react-native-paper';
 import {deleteArtigo} from '../../utils/database';
 import {CadastroSection} from '../artigo/registro';
-import {QualidadePage} from '../Qualidade/todo';
+import {QualidadePage} from '../ValidadePAge/todo';
 import {deleteArigoById, getAllartigoByUserId} from '../../controller/artigo';
 import {actions, actions as artigoActions} from '../../store/reducers/artigo';
 import {formatCurrency} from '../../utils/currency';
-import swal from 'react-native-sweet-alert';
 
 export const ArtigoListItem = navigation => {
   const [visible, setVisible] = useState(false);
@@ -71,18 +71,12 @@ export const ArtigoListItem = navigation => {
 
       const response = await deleteArigoById(item.id_produto);
       // console.log(response)
-      swal.showAlertWithOptions({
-        title: 'removido com sucesso',
-        subTitle: `${item.nome} foi removido com sucesso!`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancel',
-        otherButtonColor: '#dedede',
-        style: 'success',
-        cancellable: true,
-        onConfirm: () => console.log('Confirmed'),
-        onCancel: () => console.log('Cancelled'),
-      });
+      Alert
+      .alert('removido com sucesso',
+        `${item.nome} foi removido com sucesso!`,
+        [{ text: 'OK' }],
+        { cancelable: false } );
+     
       get();
 
       dispatch(artigoActions.setLoading(false));
@@ -95,15 +89,17 @@ export const ArtigoListItem = navigation => {
 
   const get = async () => {
     try {
-
       dispatch(artigoActions.setLoading(true));
       const artigos = await getAllartigoByUserId(id_usuario);
       dispatch(artigoActions.setArtigos(artigos));
       setData(artigos);
-      dispatch(artigoActions.setLoading(false));
     } catch (error) {
-      dispatch(artigoActions.setLoading(false));
       ToastAndroid.show(error, ToastAndroid.LONG);
+    } finally {
+      
+      dispatch(artigoActions.setLoading(false));
+
+
     }
   };
   
@@ -145,7 +141,7 @@ export const ArtigoListItem = navigation => {
               textColor="white"
               loading={loading}
               disabled={loading}
-              // onPress={ () =>{ dispatch(actions.setArtigoAddDialog(true)) } }
+              onPress={ () =>{ dispatch(actions.setArtigoAddDialog(true)) } }
               style={{marginRight: 10}}
               // loading={true}
               buttonColor={theme.colors.primary}>

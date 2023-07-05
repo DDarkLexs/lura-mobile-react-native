@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Appearance /* ,Button */, Alert} from 'react-native';
-import swal from 'react-native-sweet-alert';
+import { View, StyleSheet, Appearance /* ,Button */, Alert } from 'react-native';
 import {formatCurrency} from '../../utils/currency';
 import {
   Text,
@@ -17,7 +16,7 @@ import {
 } from 'react-native-paper';
 import {useSelector, useStore, useDispatch} from 'react-redux';
 import {insertNew} from '../../controller/artigo';
-import {ToastAndroid} from 'react-native';
+import { ToastAndroid,Vibration } from 'react-native';
 import {actions as artigoActions} from '../../store/reducers/artigo';
 
 
@@ -57,34 +56,21 @@ export const CadastroSection = () => {
       const response = (await insertNew(propiedade, id_usuario));
       
       dispatch(artigoActions.setLoading(false));
+      Alert.alert(
+        'sucesso',
+        `${propiedade.nome} foi guardado!`,
+        [{ text: 'OK' }],
+        { cancelable: false }
+      );
 
-
-      swal.showAlertWithOptions({
-        title: 'sucesso',
-        subTitle: `${propiedade.nome} foi guardado!`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancelar',
-        otherButtonColor: '#dedede',
-        style: 'success',
-        cancellable: true,
-        // onConfirm: () => console.log('Confirmed'),
-        // onCancel: () => console.log('Cancelled'),
-      });
     } catch (error) {
       
-      swal.showAlertWithOptions({
-        title: 'Houve um erro',
-        subTitle: `${error}!`,
-        confirmButtonTitle: 'OK',
-        confirmButtonColor: '#000',
-        otherButtonTitle: 'Cancelar',
-        otherButtonColor: '#dedede',
-        style: 'error',
-        cancellable: true,
-        // onConfirm: () => console.log('Confirmed'),
-        // onCancel: () => console.log('Cancelled'),
-      });
+      Alert.alert(
+        'Houve um erro',
+        error,
+        [{ text: 'OK' }],
+        { cancelable: false }
+      );
 
       // ToastAndroid.show(`Houve um erro: ${error}`, ToastAndroid.LONG);
     } finally {

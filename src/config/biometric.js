@@ -1,7 +1,6 @@
 import ReactNativeBiometrics, {Biometrics} from 'react-native-biometrics';
 import {loginUserAuto} from '../controller/usuario';
 import {actions} from '../store/reducers/usuario';
-import swal from 'react-native-sweet-alert';
 import {useSelector, useDispatch} from 'react-redux';
 
 export const generateBioauth = async () => {

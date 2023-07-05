@@ -5,13 +5,17 @@ const artigoSlice = createSlice({
   initialState: {
     items: [],
     qualidades: [],
-    artigosValidade:[],
+    artigosValidade: [],
     loading: false,
     id_produto: null,
-    artigoAddDialog:  false,
-    qualidadeDialog:  false,
+    artigoAddDialog: false,
+    qualidadeDialog: false,
+    infoArtigoValidade: {},
   },
   reducers: {
+    setInfoArtigoValidade: (state, action) => {
+      Object.assign(state.infoArtigoValidade, action.payload);
+    },
     setArtigosValidade: (state, action) => {
       state.artigosValidade = action.payload;
     },
