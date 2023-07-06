@@ -35,7 +35,7 @@ import {actions as artigoActions} from '../store/reducers/artigo';
 import { EditPerfilDialog } from '../components/PerfilEditDialog/index'
 
 export const Main = () => {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(3);
   const [state, setState] = useState({open: false});
   const onStateChange = ({open}) => setState({open});
   
@@ -86,8 +86,13 @@ export const Main = () => {
       <Appbar.Header>
         {/* <Appbar.BackAction onPress={() => {}} /> */}
         <Appbar.Content title={'Lura'} mode="medium" color="white" />
-
-        <Avatar.Icon size={40} style={{marginRight: 5}} icon="account" />
+        <Avatar.Image
+        source={require('../assets/images/user.png')}
+        size={40}
+        
+        style={{marginRight: 5}}
+        />
+        
       </Appbar.Header>
       <ValidadeInfo />
       <EditPerfilDialog />

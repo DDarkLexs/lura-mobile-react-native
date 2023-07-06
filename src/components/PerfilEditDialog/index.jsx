@@ -1,5 +1,5 @@
-import React from 'react';
-import {StyleSheet} from 'react-native';
+import React,{ useEffect, useState } from 'react';
+import {Alert, StyleSheet} from 'react-native';
 import {
   Dialog,
   Paragraph,
@@ -7,6 +7,8 @@ import {
   Text,
   Button,
   useTheme,
+  TextInput,
+  HelperText
 } from 'react-native-paper';
 import {useDispatch, useSelector} from 'react-redux';
 import {actions as action} from '../../store/reducers/usuario';
@@ -18,58 +20,120 @@ import {
   formatarDataLongo,
   contando,
 } from '../../utils/formata-data';
-export const EditPerfilDialog = (/* { artigo , artigo } */) => {
-  const showDialog = useSelector(state => state.usuario.editDialog);
-  const dispatch = useDispatch();
-  const theme = useTheme()
-  
-//   const artigo = useSelector(state => state.artigo.infoArtigoValidade);
+import { getUsuario,updateUsuario } from '../../controller/usuario';
 
+
+export const EditPerfilDialog = (/* { artigo , artigo } */) => {
+  const [ nome, setNome ] = useState("") 
+  const [ senha, setSenha ] = useState("") 
+  const [ senha2, setSenha2 ] = useState("") 
+  const [ telefone, setTelefone ] = useState("") 
+  const [loading,setLoading ] = useState(false);
+
+  const showDialog = useSelector(state => state.usuario.editDialog);
+  const account = useSelector(state => state.usuario.account);
+  const dispatch = useDispatch();
+  const theme = useTheme();
+
+
+
+  const updateProfile = async (user) => {
+    try {
+      setLoading(true)
+      if (senha != senha2) throw "2º senha é diferente da 1º Senha" 
+
+      await updateUsuario(user, account.id_usuario);
+      const newUser = await getUsuario(account.id_usuario);
+
+      dispatch(action.setAccount( newUser ));
+      Alert.alert("Atualizado com sucesso!",
+      "Os dados pessoais foram guardado com sucesso!");
+
+    } catch (error) {
+    Alert.alert("Houve um erro!",error)
+    } finally {
+      setLoading(false)
+
+    }
+  }
+  const get = async (id_usuario) => {
+    const { nome,senha,telefone } = await getUsuario(id_usuario);
+    setNome(nome);
+    setSenha(senha);
+    setSenha2(senha);
+    setTelefone(telefone);
+  }
+  //   const artigo = useSelector(state => state.artigo.infoArtigoValidade);
+    useEffect(() => {
+      
+      get(account.id_usuario)
+      
+    },[account])
+
+    
   return (
     <Portal>
       <Dialog
+        dismissable={false}
         visible={showDialog}
         // onDismiss={() => console.log('Dialog dismissed.')}
         >
             <Dialog.Title>{"Editar a conta"}</Dialog.Title>
         <Dialog.Content>
- {/*        
-          <Paragraph>
-            <Text style={styles.label}>fabricado: </Text>
-            <Text style={styles.value}>{formatarDataLongo(artigo.inicio)}</Text>
-          </Paragraph>
-          <Paragraph>
-            <Text style={styles.label}>expiração: </Text>
-            <Text style={styles.value}>
-              {' '}
-              {formatarDataLongo(artigo.expira)}{' '}
-            </Text>
-          </Paragraph>
-          <Paragraph>
-            <Text style={styles.label}>Situação: </Text>
-            <Text style={styles.value}>
-              {!DataExpirou(artigo.expira)
-                ? 'expirará ' + contando(artigo.expira)
-                : 'expirou ' + contando(artigo.expira)}
-            </Text>
-          </Paragraph>
-          <Paragraph>
-            <Text style={styles.label}>Estado: </Text>
-            <Text style={styles.value}>
-              {!DataExpirou(artigo.expira) ? 'Válido' : 'Expirou'}
-            </Text>
-          </Paragraph>
-        */}
+        <TextInput
+          disabled={loading}
+          mode='outlined'
+          value={nome}
+          keyboardType='default'
+          onChangeText={(value) => { setNome(value) }}
+          label={'nome'}
+          />
+          <TextInput
+          disabled={loading}
+          onChangeText={(value) => { setTelefone(value) }}
+          mode='outlined'
+          value={telefone}
+          keyboardType='default'
+          label={'telefone'}
+        />
+          {/* <HelperText>
+          {JSON.stringify(account)}
+          </HelperText> */}
+        <TextInput
+          disabled={loading}
+          mode='outlined'
+          value={senha}
+          keyboardType='default'
+          label={'senha'}
+          secureTextEntry
+          onChangeText={(value) => { setSenha(value) }}
+          />
+
+        <TextInput
+          disabled={loading}
+          mode='outlined'
+          keyboardType='default'
+          label={'introduza novamente senha'}
+          secureTextEntry
+          onChangeText={(value) => { setSenha2(value) }}
+          />
+
+      
+
         </Dialog.Content> 
         <Dialog.Actions>
           <Button
+            disabled={loading}
+            loading={loading}
             textColor="white"
             buttonColor={theme.colors.primary}
-            onPress={() => dispatch(action.setEditDialog(!showDialog))}>
+            onPress={()=> {updateProfile({nome,senha,telefone})}}>
             salvar
           </Button>
 
           <Button
+            disabled={loading}
+            loading={loading}
             textColor="white"
             buttonColor={theme.colors.primary}
             onPress={() => dispatch(action.setEditDialog(!showDialog))}>

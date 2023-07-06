@@ -67,6 +67,7 @@ const LoginScreen = () => {
   return (
     <ImageBackground
     source={require('../../assets/images/background-login.jpg')}
+    
     style={styles.backgroundImage}>
     <View style={styles.container}>
     <Card disabled={loading}>
@@ -76,6 +77,7 @@ const LoginScreen = () => {
         <Avatar.Image
         source={require('../../assets/images/user.png')}
         size={120}
+        // style={{ backgroundColor:'transparent' }}
         />
         <Text style={{ fontSize: 30, marginBottom: 16 }}>
             Entrada

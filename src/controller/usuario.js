@@ -31,3 +31,34 @@ export const loginUser = credencial => {
     }
   });
 };
+
+export const getUsuario = (id_usuario) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+
+      const user = (
+        await knex('usuario')
+          .select("*")
+          .where('id_usuario', id_usuario))[0];
+          resolve(user)
+    } catch (error) {
+      reject(error)
+    }
+  });
+};
+
+export const updateUsuario = (user, id_usuario) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+
+      (
+        await knex('usuario')
+        .where('id_usuario',id_usuario)
+        .update(user));
+
+          resolve("Sucesso")
+    } catch (error) {
+      reject(error)
+    }
+  });
+};

@@ -67,8 +67,8 @@ export const Painel = () => {
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <Avatar.Icon size={65} icon="account" />
           </View>
-          <Title>{account.nome}</Title>
-          {/* <Paragraph>{ JSON.stringify(showDialog) }</Paragraph> */}
+          <Title> { account.nome } </Title>
+          <Paragraph> { account.telefone } </Paragraph>
         </Card.Content>
         <Card.Actions></Card.Actions>
       </Card>

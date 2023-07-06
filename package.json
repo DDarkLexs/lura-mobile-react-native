@@ -9,6 +9,7 @@
     "start": "react-native start",
     "build": "cd android && gradlew assembleRelease",
     "debug": "cd android && gradlew assembleDebug",
+    "clear": "npx react-native clean",
     "test": "jest"
   },
   "dependencies": {
