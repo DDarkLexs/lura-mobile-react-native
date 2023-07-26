@@ -9,7 +9,7 @@ import { generateAccessToken } from '../../config/jwt';
 import { actions } from '../../store/reducers/usuario'
 import {useSelector, useDispatch} from 'react-redux';
 
-const LoginScreen = (route) => {
+const LoginScreen = () => {
   const [nome, setNome] = useState('');
   const [password, setPassword] = useState('');
   const [loading,setLoading ] = useState(false);
@@ -70,11 +70,7 @@ const LoginScreen = (route) => {
         <Card.Content >
 
         <View style={{ alignItems: 'center', margin:"auto",justifyContent:'center' }}>
-        <Avatar.Image
-        source={require('../../assets/images/user.png')}
-        size={120}
-        // style={{ backgroundColor:'transparent' }}
-        />
+       
         <Text style={{ fontSize: 30, marginBottom: 16 }}>
             Entrada
         </Text>
@@ -101,24 +97,18 @@ const LoginScreen = (route) => {
         right={ <TextInput.Icon icon={'lock'} name="lock" />}
         style={{ marginBottom: 16 }}
       />
-      <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+      {/* <View style={{ flexDirection: 'row', justifyContent: 'center' }}> */}
       <Button  
       disabled={loading}
       loading={loading}
-      style={{ marginRight:5 }}
       mode="contained" textColor={'white'} onPress={handleLogin}>
         Entrar
       </Button>
-      <Button 
-        disabled={loading}
-        loading={loading}
-        style={{ marginLeft:5 }}
-        onPress={()=> { route=1 }}
-        mode="contained" textColor={'white'}>
+      {/* <Button mode="contained" textColor={'white'}>
         criar conta
-      </Button>
+      </Button> */}
 
-      </View>
+      {/* </View> */}
       </Card.Content>
       </Card>
     </View>
@@ -128,9 +118,11 @@ const LoginScreen = (route) => {
 const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
+        resizeMode: 'cover',
         justifyContent: 'center',
       },
     container: {
+        padding: 16,
         flex:1,
         justifyContent:'center'
     }

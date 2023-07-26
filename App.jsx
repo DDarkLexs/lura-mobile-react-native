@@ -3,20 +3,30 @@ import { View, StatusBar,Appearance,StyleSheet, useColorScheme,ToastAndroid,Push
 import {Text, Button , Appbar, IconButton ,useTheme } from 'react-native-paper'
 import { Main } from './src/Pages/Main'
 import BottomNav from './src/components/bottomNavigation'
-import Login from './src/Pages/Authentication/Entrada'
-import db from './src/utils/database'
+import AuthScreen from './src/Pages/Authentication/index'
+import { Schema } from './src/database/schema'
+import {  userRepository } from './src/database/repository/usuario'
 import { useDispatch, useSelector } from 'react-redux'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const App = () => {
-
-  const [ loading, setLoading ] = useState(false)
+  const [ loading, setLoading ] = useState(true)
   const account = useSelector(state => state.usuario.account)
+  const esquema = new Schema()
+  const user = new userRepository()
+
   
-  
-   const firstStep = async () => {
+  const firstStep = async () => {
     try {
       setLoading(true)
       
-      await db.createTables()
+      // await db.createTables()
+
+      await esquema.createAll()
+      // console.log(await user.InsertNewUser(null,null,'937781157'))
+      //  await user.getUserId()
+  
+    
+      // await db.dropAllTable()
       
     } catch (error) {
       
@@ -52,11 +62,23 @@ const App = () => {
   })
 
   const RenderMain = () => {
+    const storeData = async (value) => {
+      try {
+      //  const item = await AsyncStorage.getItem('user')
+      //  console.log(item)
+        // await AsyncStorage.setItem('user',JSON.stringify({
+        //   nome:'antonio lugogo'
+        // }))
+      } catch (error) {
+        
+      }
+    }
+    storeData()
     return (
       <View style={ { flex:1 } }>
 
       {
-        !!account ? <Main /> : <Login />
+        !!account ? <Main /> : <AuthScreen />
       }
 
       </View>
@@ -83,7 +105,7 @@ const App = () => {
         backgroundColor={useTheme().colors.primary} >
       </StatusBar>
       {
-        loading?
+        false?
         <LoadingScreen></LoadingScreen>
         :
         <RenderMain />
