@@ -1,141 +1,229 @@
-import React, { useState } from 'react';
-import { View,StyleSheet,ImageBackground,Alert } from 'react-native';
-import { TextInput,  Button, Card,Avatar,Text ,HelperText } from 'react-native-paper';
-// import { generateAccessToken } from '../../config/jwt'
-import { useEffect } from 'react';
-import {  generateBioauth } from '../../config/biometric';
-import {  loginUser,loginUserAuto } from '../../controller/usuario';
-import { generateAccessToken } from '../../config/jwt';
-import { actions } from '../../store/reducers/usuario'
+import React, {useState} from 'react';
+import {View, StyleSheet, ImageBackground, Alert,Image} from 'react-native';
+import {
+    TextInput,
+    Button,
+    Card,
+    Avatar,
+    Text,
+    HelperText,
+    Checkbox,
+} from 'react-native-paper';
+import {useEffect} from 'react';
+import {generateBioauth} from '../../config/biometric';
+import { actions } from '../../store/reducers/routes';
+import { actions as UserActions } from '../../store/reducers/usuario';
 import {useSelector, useDispatch} from 'react-redux';
 
-const LoginScreen = (route) => {
-  const [nome, setNome] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading,setLoading ] = useState(false);
-  const account = useSelector(state => state.usuario.account)
 
-  const dispatch = useDispatch()
-  
+import {UserController} from '../../controller/usuario';
 
-    useEffect(()=> {
-      const fisrt = async () => {
-        setLoading(true)
-        try {
-          
-          const result = await generateBioauth()
-          if (result.success) {
-            // console.log(result)
-            const user = await loginUserAuto()
-            dispatch(actions.setAccount( user ))            
-          }
-          setLoading(false)
-        } catch (error) {
-          setLoading(false)
-          console.error(error)          
-        }
+export default function LoginScreen() {
+    const [telefone, setTelefone] = useState('');
+    const [senha, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState(false);
+    const userCrl = new UserController();
 
-      }
+    const dispatch = useDispatch();
 
-      fisrt()
-      // generateAccessToken({ nome:'antonio lugogo' })
-    },[])
+    useEffect(() => {
+        const fisrt = async () => {
+            setLoading(true);
+            try {
+                  const response = await generateBioauth()
+                  if (response.success) {
+                     
+                    const user = await userCrl.getUserByIdUsuario(response.touchID)
 
-  const handleLogin = async () => {
-    // Aqui você pode implementar a lógica de autenticação
-    try {
-      setLoading(true)
-      const account = await loginUser({ nome, password })
-      dispatch(actions.setAccount( account ))
-      // await generateAccessToken(result)
+                    await autoLogin(user.telefone,user.senha)
 
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
+                  }
+            } catch (error) {
 
-      Alert.alert(
-        'Houve um erro',
-        error,
-        [{ text: 'OK' }],
-        { cancelable: false }
-      );
+
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        
+        fisrt();
+        // generateAccessToken({ nome:'antonio lugogo' })
+    }, []);
     
+    const autoLogin = (tel,sen) => {
+        return new Promise(async (resolve,reject)=> {
+            try {
+                setLoading(true);
+                // const senha = password
+                // console.log(user)
+    
+                if (status) {
+                  
+                    const userOnline = await userCrl.logInOnline(tel, sen);
+                    const user = await userCrl.loginUser(userOnline);
+                    dispatch(UserActions.setAccount(user))
+                    /* 
+                    buscar usuario online, adicionar no sqlite3
+                    depois fazer o login
+                    */
+                } else {
+                   const user = await userCrl.loginOffline(tel, sen);
+                    dispatch(UserActions.setAccount(user))
+                    /* 
+                      buscar usuario no sqlite3
+                      depois fazer o login
+                    */
+                }
+                
+                resolve()
+            } catch (error) {
+                reject(error);
+    
+                Alert.alert('Houve um erro', error, [{text: 'OK'}], {
+                    cancelable: false,
+                });
+            } finally {
+                setLoading(false);
+            }
+
+        })
+
     }
-  };
+    const handleLogin = async () => {
+        // Aqui você pode implementar a lógica de autenticação
+        try {
+            setLoading(true);
+            // const senha = password
+            // console.log(user)
 
-  return (
-    <View style={styles.container}>
-    <Card disabled={loading}>
-        <Card.Content >
+            if (status) {
+              
+                const userOnline = await userCrl.logInOnline(telefone, senha);
+                const user = await userCrl.loginUser(userOnline);
+                dispatch(UserActions.setAccount(user))
+                /* 
+                buscar usuario online, adicionar no sqlite3
+                depois fazer o login
+                */
+            } else {
+               const user = await userCrl.loginOffline(telefone, senha);
+                dispatch(UserActions.setAccount(user))
+                /* 
+                  buscar usuario no sqlite3
+                  depois fazer o login
+                */
+            }
 
-        <View style={{ alignItems: 'center', margin:"auto",justifyContent:'center' }}>
-        <Avatar.Image
-        source={require('../../assets/images/user.png')}
-        size={120}
-        // style={{ backgroundColor:'transparent' }}
-        />
-        <Text style={{ fontSize: 30, marginBottom: 16 }}>
-            Entrada
-        </Text>
+        } catch (error) {
+            console.log(error);
+
+            Alert.alert('Houve um erro', error, [{text: 'OK'}], {
+                cancelable: false,
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <Card disabled={loading}>
+                <Card.Content>
+                    <View
+                        style={{
+                            alignItems: 'center',
+                            margin: 'auto',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Image
+                            source={require('../../assets/images/user.png')}
+                            style={{ width:150,height:150 }}
+                        />
+                        <Text style={{fontSize: 30, marginBottom: 16}}>
+                            Entrada
+                        </Text>
+                    </View>
+                    <TextInput
+                        label='Telefone'
+                        value={telefone}
+                        onChangeText={setTelefone}
+                        mode='outlined'
+                        keyboardType='phone-pad'
+                        autoCapitalize='none'
+                        disabled={loading}
+                        right={
+                            <TextInput.Icon icon={'phone'} name='telefone' />
+                        }
+                        style={{marginBottom: 16}}
+                    />
+
+                    <TextInput
+                        label='Palavra-passe'
+                        value={senha}
+                        onChangeText={setPassword}
+                        disabled={loading}
+                        mode='outlined'
+                        secureTextEntry
+                        right={<TextInput.Icon icon={'lock'} name='lock' />}
+                        style={{marginBottom: 16}}
+                    />
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'flex-start',
+                            margin: 10,
+                        }}
+                    >
+                        <Checkbox
+                            status={status ? 'checked' : 'unchecked'}
+                            onPress={() => {
+                                setStatus(!status);
+                            }}
+                        />
+                        <HelperText>{status ? 'online' : 'offline'}</HelperText>
+                    </View>
+                    <View
+                        style={{flexDirection: 'row', justifyContent: 'center'}}
+                    >
+                        <Button
+                            disabled={loading}
+                            loading={loading}
+                            style={{marginRight: 5}}
+                            mode='contained'
+                            textColor={'white'}
+                            onPress={handleLogin}
+                        >
+                            Entrar
+                        </Button>
+                        <Button
+                            disabled={loading}
+                            loading={loading}
+                            style={{marginLeft: 5}}
+                            onPress={() => {
+                                dispatch(actions.setAuthPage(1));
+                            }}
+                            mode='contained'
+                            textColor={'white'}
+                        >
+                            criar conta
+                        </Button>
+                    </View>
+                </Card.Content>
+            </Card>
         </View>
-      <TextInput
-        label="Nome"
-        value={nome}
-        onChangeText={setNome}
-        mode="outlined"
-        keyboardType="default"
-        autoCapitalize="none"
-        disabled={loading}
-        right={ <TextInput.Icon  icon={'account'} name="account" />}
-        style={{ marginBottom: 16 }}
-        />
-     
-      <TextInput
-        label="Palavra-passe"
-        value={password}
-        onChangeText={setPassword}
-        disabled={loading}
-        mode="outlined"
-        secureTextEntry
-        right={ <TextInput.Icon icon={'lock'} name="lock" />}
-        style={{ marginBottom: 16 }}
-      />
-      <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-      <Button  
-      disabled={loading}
-      loading={loading}
-      style={{ marginRight:5 }}
-      mode="contained" textColor={'white'} onPress={handleLogin}>
-        Entrar
-      </Button>
-      <Button 
-        disabled={loading}
-        loading={loading}
-        style={{ marginLeft:5 }}
-        onPress={()=> { route=1 }}
-        mode="contained" textColor={'white'}>
-        criar conta
-      </Button>
-
-      </View>
-      </Card.Content>
-      </Card>
-    </View>
-  );
-};
+    );
+}
 
 const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
         justifyContent: 'center',
-      },
+    },
     container: {
-        flex:1,
-        justifyContent:'center'
-    }
-    
-
-})
-
-export default LoginScreen;
+        flex: 1,
+        justifyContent: 'center',
+    },
+});

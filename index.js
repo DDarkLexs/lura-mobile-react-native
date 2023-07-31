@@ -24,6 +24,3 @@ export default function Main() {
 }
 
 AppRegistry.registerComponent(appName, () => Main);
-// AppRegistry.registerHeadlessTask('controlo-de-validade', ()=>{
-//   require('./src/config/background')
-// });

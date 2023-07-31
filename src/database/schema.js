@@ -164,7 +164,7 @@ export class Schema extends LuraDB {
         try {
             // await this.dropTable();
 
-            console.log('iniciando');
+         
 
             await this.createUsuario();
             await this.createSeccao();
@@ -172,7 +172,7 @@ export class Schema extends LuraDB {
             await this.createArtigo();
             await this.createValidade();
 
-            console.log('terminando');
+          
         } catch (error) {
             console.log(error);
             throw error;

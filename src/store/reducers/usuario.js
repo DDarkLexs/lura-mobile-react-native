@@ -1,5 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit';
-
+import { LocalAccount } from '../../controller/storage'
+const localStorage = new LocalAccount()
 const userSlice = createSlice({
   name: 'usuario',
   initialState: {

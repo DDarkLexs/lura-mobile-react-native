@@ -1,20 +1,21 @@
 import React, {useState, useEffect} from 'react';
 import {ScrollView, Text, StyleSheet, Switch, View,Alert} from 'react-native';
-import {DataTable,Badge, useTheme,Button} from 'react-native-paper';
-import {getAllartigoByValidade} from '../../controller/artigo';
-import {actions as artigoActions} from '../../store/reducers/artigo';
+import {DataTable,Badge, useTheme,Button, Chip} from 'react-native-paper';
+import { ValidadeController } from '../../controller/validade';
+import {  actions  } from '../../store/reducers/validade';
 import {formatCurrency} from '../../utils/currency';
 import {useDispatch, useSelector} from 'react-redux';
 import { DataExpirou,formatarDataMid } from '../../utils/formata-data';
 
 
 export const Vigencia = () => {
-  const data = useSelector(state => state.artigo.artigosValidade);
+  const data = useSelector(state => state.validade.artigosValidade);
   const [filteredData, setFilteredData] = useState(data);
   const [showExpired, setShowExpired] = useState(true);
-  const {id_usuario} = useSelector(state => state.usuario.account);
-  const showDialog = useSelector(state => state.artigo.qualidadeDialog);
-  const loading = useSelector(state => state.artigo.loading);
+  const id_seccao = useSelector(state => state.setor.setor);   
+  const showDialog = useSelector(state => state.validade.validadeDialog);
+  const loading = useSelector(state => state.validade.loading);
+  const valCtrl = new ValidadeController()
 
   const theme = useTheme();
   const dispatch = useDispatch();
@@ -26,24 +27,26 @@ export const Vigencia = () => {
     setFilteredData(filteredItems);
   };
 
-  const getArtigos = async () => {
+  const getValidades = async () => {
     try {
-    dispatch(artigoActions.setLoading(true));
-    const response = await getAllartigoByValidade(id_usuario)
+      dispatch(actions.setArtigosValidade([]));
+    dispatch(actions.setLoading(true));
+    const response = await valCtrl.getAllArValByIdSeccao(id_seccao)
     const artigos = response.map(item => {
         Object.assign(item, {expirado: DataExpirou(item.expira)})        
         return item
     })
 
-    dispatch(artigoActions.setArtigosValidade(artigos));
+    dispatch(actions.setArtigosValidade(artigos));
     } catch (error) {
+      console.error(error)
       Alert.alert(
         'Houve um erro',
-        error,
+        JSON.stringify(error),
         [{ text: 'OK' }],
         { cancelable: false });
     } finally {
-      dispatch(artigoActions.setLoading(false));
+      dispatch(actions.setLoading(false));
     };
     }
 
@@ -52,16 +55,23 @@ export const Vigencia = () => {
   };
 
   useEffect(() => {
-    getArtigos();
+    getValidades();
 }, []);
+
+
+  useEffect(() => {
+    getValidades();
+}, [id_seccao]);
+
 
 useEffect(() => {
     const work = (async ()=> {
-        // getArtigos()
+        
         const filteredItems = showExpired
           ? data.filter(item => item.expirado)
           : data.filter(item => !item.expirado);
         setFilteredData(filteredItems);
+        
 
     })
     work()
@@ -99,7 +109,7 @@ useEffect(() => {
               loading={loading}
               buttonColor={theme.colors.primary}
               onPress={() => {
-               getArtigos();
+                getValidades();
               }}>
               Atualizar
             </Button>
@@ -115,24 +125,25 @@ useEffect(() => {
 
         {filteredData.map(item => (
           <DataTable.Row 
-          onLongPress={()=>{
-            dispatch(artigoActions.setInfoArtigoValidade({ ...item }))
-            dispatch(artigoActions.setqualidadeDialog(!showDialog))
+          onPress={()=>{
+            dispatch(actions.setArtigo({ ...item }))
+            dispatch(actions.setValidadeDialog(!showDialog))
           }
           }
-          key={item.id_qualidade}>
+          key={item.id_validade}>
             <DataTable.Cell>{item.nome}</DataTable.Cell>
             <DataTable.Cell>{formatarDataMid(item.expira)}</DataTable.Cell>
             <DataTable.Cell>
-            <Badge 
+            <Chip
+            textStyle={{ color:'white', }}
             style={{ 
             borderRadius: 10,
             marginRight: 5,
             color:'white',
-            backgroundColor:item.expirado ? 'red' : '#34a853'
-             }} size={25}>
+            backgroundColor:item.expirado ? theme.colors.errorContainer : '#34a853'
+             }}>
                 {item.expirado ? 'Expirado' : 'Válido'}
-            </Badge>
+            </Chip>
             </DataTable.Cell>
           </DataTable.Row>
         ))}

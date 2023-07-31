@@ -4,12 +4,12 @@ import {
   Dialog,
   Paragraph,
   Portal,
-  Text,
+  Text, 
   Button,
   useTheme,
 } from 'react-native-paper';
 import {useDispatch, useSelector} from 'react-redux';
-import {actions as action} from '../../store/reducers/artigo';
+import {actions as action} from '../../store/reducers/validade';
 import {
   formatarData,
   dataFormatada,
@@ -19,9 +19,9 @@ import {
   contando,
 } from '../../utils/formata-data';
 export const ValidadeInfo = (/* { artigo , artigo } */) => {
-  const showDialog = useSelector(state => state.artigo.qualidadeDialog);
+  const showDialog = useSelector(state => state.validade.validadeDialog);
   const dispatch = useDispatch();
-  const artigo = useSelector(state => state.artigo.infoArtigoValidade);
+  const artigo = useSelector(state => state.validade.artigo);
   const theme = useTheme()
   return (
     <Portal>
@@ -60,7 +60,9 @@ export const ValidadeInfo = (/* { artigo , artigo } */) => {
           <Button
             textColor="white"
             buttonColor={theme.colors.primary}
-            onPress={() => dispatch(action.setqualidadeDialog(!showDialog))}>
+            onPress={() => dispatch(action.setValidadeDialog(!showDialog))
+            
+            }>
             fechar
           </Button>
         </Dialog.Actions>

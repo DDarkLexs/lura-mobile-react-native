@@ -22,14 +22,8 @@ const artigoSlice = createSlice({
     setArtigoAddDialog: (state, action) => {
       state.artigoAddDialog = action.payload;
     },
-    setqualidadeDialog: (state, action) => {
-      state.qualidadeDialog = action.payload;
-    },
-    setIdProduto: (state, action) => {
+    setIdArtigo: (state, action) => {
       state.id_produto = action.payload;
-    },
-    setQualidades: (state, action) => {
-      state.qualidades = action.payload;
     },
     setArtigos: (state, action) => {
       state.items = action.payload;

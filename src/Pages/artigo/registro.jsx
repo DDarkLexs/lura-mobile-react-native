@@ -15,7 +15,7 @@ import {
   Dialog,
 } from 'react-native-paper';
 import {useSelector, useStore, useDispatch} from 'react-redux';
-import {insertNew} from '../../controller/artigo';
+import {ArtigoController, insertNew} from '../../controller/artigo';
 import { ToastAndroid,Vibration } from 'react-native';
 import {actions as artigoActions} from '../../store/reducers/artigo';
 
@@ -27,12 +27,16 @@ export const CadastroSection = () => {
   const [preco, setPreco] = useState(0);
   const [descricao, setDescricao] = useState('');
   const dispatch = useDispatch();
+  const arigoCtrl = new ArtigoController()
+  const setor = useSelector(state => state.setor.setor);    
+  
 
   const showDialog = () => setVisible(true);
 
   const hideDialog = () => dispatch(artigoActions.setArtigoAddDialog(false));
 
   // const store = useStore().getState();
+  
 
   const propiedade = {nome, categoria, preco, descricao};
   const loading = useSelector(state => state.artigo.loading);
@@ -50,24 +54,19 @@ export const CadastroSection = () => {
 
   const registrar = async () => {
     try {
+
+      if(!setor) throw 'informe o setor'
       dispatch(artigoActions.setLoading(true));
       
+      const response = (await arigoCtrl.addNewArtigo(propiedade, setor));
       
-      const response = (await insertNew(propiedade, id_usuario));
-      
-      dispatch(artigoActions.setLoading(false));
-      Alert.alert(
-        'sucesso',
-        `${propiedade.nome} foi guardado!`,
-        [{ text: 'OK' }],
-        { cancelable: false }
-      );
+      ToastAndroid.show(`${propiedade.nome} foi guardado!`, ToastAndroid.LONG);
 
     } catch (error) {
       
       Alert.alert(
         'Houve um erro',
-        error,
+        JSON.stringify(error),
         [{ text: 'OK' }],
         { cancelable: false }
       );

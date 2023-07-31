@@ -1,64 +1,180 @@
-import {knex} from '../utils/database';
-
-export const loginUserAuto = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const query = (await knex('usuario').select('*'))[0];
-
-      if (!query) throw 'O nome ou a palavra-passe está incorreto';
-
-      resolve(query);
-    } catch (error) {
-      reject(error);
+import {UserRepository} from '../database/repository/usuario';
+import {LocalAccount} from './storage';
+import {
+    insertUser,
+    loginInUser,
+    getUser,
+    updateAuthorization,
+} from '../api/usuario';
+import moment from 'moment';
+import {SetorController} from './setor';
+import {ArtigoController} from './artigo';
+import {ValidadeController} from './validade';
+const localStore = new LocalAccount();
+const userRepo = new UserRepository();
+export class UserController extends UserRepository {
+    constructor() {
+        super();
+        this.localAccount = new LocalAccount();
     }
-  });
-};
-export const loginUser = credencial => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const query = (
-        await knex('usuario')
-          .select('*')
-          .where('nome', '=', credencial.nome)
-          .andWhere('senha', '=', credencial.password)
-      )[0];
+    loginUser(user) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // await loginInUser(user.telefone,user.senha)
+                // await this.localAccount.storeAccount(token)
+                const response = await this.getUserByIdUsuario(user.id_usuario);
 
-      if (!query) throw 'O nome ou a palavra-passe está incorreto';
-
-      resolve(query);
-    } catch (error) {
-      reject(error);
+                if (response) {
+                    await this.localAccount.storeAccount(response);
+                } else {
+                    await this.insertNewUser(user);
+                    await this.localAccount.storeAccount(user);
+                }
+                // const response = (await this.authUser({ telefone, senha }))
+                resolve(user);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
-  });
-};
 
-export const getUsuario = (id_usuario) => {
-  return new Promise(async (resolve, reject) => {
-    try {
+    loginOffline(telefone, senha) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // await loginInUser(user.telefone,user.senha)
+                // await this.localAccount.storeAccount(token)
+                const response = await this.authUser(telefone, senha);
 
-      const user = (
-        await knex('usuario')
-          .select("*")
-          .where('id_usuario', id_usuario))[0];
-          resolve(user)
-    } catch (error) {
-      reject(error)
+                await this.localAccount.storeAccount(response);
+                resolve(response);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
-  });
-};
 
-export const updateUsuario = (user, id_usuario) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-
-      (
-        await knex('usuario')
-        .where('id_usuario',id_usuario)
-        .update(user));
-
-          resolve("Sucesso")
-    } catch (error) {
-      reject(error)
+    async signInOffline(form) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                form.datacad = moment().format();
+                const account = await this.insertNewUser(form);
+                resolve(account);
+            } catch (error) {
+                reject(error.message);
+            }
+        });
     }
-  });
-};
+
+    async signInOnline(form) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const account = await insertUser(form);
+                await this.insertNewUser(account);
+                // await this.localAccount.storeAccount(account)
+                resolve(account);
+            } catch (error) {
+                // reject(error)
+                reject(error.message);
+            }
+        });
+    }
+
+    async logInOnline(telefone, senha) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const {token} = await loginInUser(telefone, senha);
+                await this.localAccount.storeToken(token);
+                updateAuthorization(token);
+                const user = await getUser(telefone, senha);
+
+                resolve(user);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    getUsuario() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const {id_usuario} = await localStore.getAccount();
+                const user = await userRepo.getUserByIdUsuario(id_usuario);
+                resolve(user);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    getUsuarioOnline() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const user = await getUser();
+                resolve(user);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    updateUsuario(user) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const item = await localStore.getAccount();
+                await userRepo.updateUser(user, item.id_usuario);
+
+                resolve('Sucesso');
+            } catch (error) {
+                console.log(error);
+                reject(error);
+            }
+        });
+    }
+
+    proceedBackup() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                /* usuario ======================================*/
+                let user = await this.getUsuarioOnline();
+                console.log( user )
+                
+                if(!user){
+                    user = await this.getUsuario()
+                    user = await insertUser({
+                        nome:user.nome,
+                        telefone:user.telefone,
+                        senha:user.senha,
+                    })
+
+                    resolve('terminando a sessão!')
+                    console.log('does not exists')
+                }
+
+                /* seccao =======================================*/
+                const setorCtrl = new SetorController();
+                const setores = await setorCtrl.getAll(user.id_usuario);
+
+                /* artigo ==================================*/
+                const artigoCtrl = new ArtigoController();
+                const artigos = await artigoCtrl.getAllartigoByIdUsuario(
+                    user.id_usuario,
+                );
+
+                /* notaDeArtigo ==========================*/
+                const notaDeArtigos =
+                    await artigoCtrl.getAllNotaDeArtigoByIdUsuario(
+                        user.id_usuario,
+                    );
+                /* validade ============================ */
+                const valCtrl = new ValidadeController();
+                const validades = await valCtrl.getAllByOneUser(
+                    user.id_usuario,
+                );
+
+                // console.log(validades);
+
+                resolve('Seus dados foram salvo na nuvem!');
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+}

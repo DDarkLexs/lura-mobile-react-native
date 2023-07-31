@@ -6,7 +6,7 @@ const knexConfig = con({
     connection: {
         name: 'luraDB.db',
         location: 'Library',
-        readOnly:false,
+        readOnly:true,
     },
     useNullAsDefault:true
 });

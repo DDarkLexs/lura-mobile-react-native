@@ -23,10 +23,11 @@ import {
   Badge,
   TextInput,
   HelperText,
+  Chip,
 } from 'react-native-paper';
 import {containerStyle} from '../../utils/style';
 import {useSelector, useDispatch} from 'react-redux';
-import {actions} from '../../store/reducers/artigo';
+import {actions} from '../../store/reducers/validade';
 import {
   formatarData,
   dataFormatada, 
@@ -37,16 +38,16 @@ import {
   formatarDataLongo
 } from '../../utils/formata-data';
 import {
-  insertQualidade,
-  getQualidadebyIdProduto,
   deleteQualidadeById,
-} from '../../controller/qualidade';
+  ValidadeController,
+} from '../../controller/validade';
 import {NotFoundPage} from '../../components/NotFoundQualidade';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 
-export const QualidadePage = () => {
+export const ValidadePage = (navigation) => {
   const theme = useTheme()
+  const valCtrl = new ValidadeController()
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogVisible, setDialogVisible] = useState(false);
   const [inicio, setInicio] = useState(new Date());
@@ -54,24 +55,25 @@ export const QualidadePage = () => {
   const [item, setItem] = useState({});
   const [showInicioPicker, setShowInicioPicker] = useState(false);
   const [showExpiraPicker, setShowExpiraPicker] = useState(false);
-  
-  const data = useSelector(state => state.artigo.qualidades);
-  const loading = useSelector(state => state.artigo.loading);
+  const data = useSelector(state => state.validade.items);
+  const loading = useSelector(state => state.validade.loading);
   const artigos = useSelector(state => state.artigo.items);
-  const id_produto = useSelector(state => state.artigo.id_produto);
-  const showDialog = useSelector(state => state.artigo.qualidadeDialog);
+  const id_artigo = useSelector(state => state.validade.id_artigo);
+  const showDialog = useSelector(state => state.validade.validadeDialog);
+  const id_seccao = useSelector(state => state.setor.setor);
   const dispatch = useDispatch();
 
-  const artigo = artigos.filter(item => item.id_produto === id_produto)[0];
+  const artigo = artigos.filter(item => item.id_artigo === id_artigo)[0]||{ nome:'adicione um artigo' };
 
   const handleSearch = query => {
     setSearchQuery(query);
-    // Filter data based on search query
-    const filteredData = data.filter(item =>
-      item.name.toLowerCase().includes(query.toLowerCase()),
-    );
-    // Update the data to display filtered result
-    dispatch(filteredData.setQualidades(query));
+    
+    // // Filter data based on search query
+    // const filteredData = data.filter(item =>
+    //   item.name.toLowerCase().includes(query.toLowerCase()),
+    // );
+    // // Update the data to display filtered result
+    // dispatch(filteredData.setQualidades(query));
   };
 
   const openDialog = () => {
@@ -87,26 +89,23 @@ export const QualidadePage = () => {
       dispatch(actions.setLoading(true));
       // Perform save operation with the values of "inicio" and "expira"
       // You can add your logic here to save the values
-      await insertQualidade({
+      await valCtrl.insertValidade({
         inicio:formatarDefault(inicio), 
         expira:formatarDefault(expira),
-        id_produto});
+        id_artigo});
       // After saving, close the dialog and reset the values
-      dispatch(actions.setLoading(false));
-      Alert.alert(
-        'sucesso',
-        "foi guardado com sucesso!",
-        [{ text: 'OK' }],
-        { cancelable: false }
-      );
+    
       setDialogVisible(false);
       setInicio(new Date());
       setExpira(new Date());
-      get(id_produto)
+      ToastAndroid.show(
+        "foi guardado com sucesso!",
+        ToastAndroid.LONG);
+      get(id_artigo)
     } catch (error) {
       Alert.alert(
         'Houve um erro',
-        error,
+        JSON.stringify(error),
         [{ text: 'OK' }],
         { cancelable: false });
     } finally {
@@ -114,12 +113,12 @@ export const QualidadePage = () => {
     }
   };
 
-  const deleteItem = async id_qualidade => {
+  const deleteItem = async id_validade => {
     try {
       dispatch(actions.setLoading(true));
 
-      const query = await deleteQualidadeById(id_qualidade);
-      await get(id_produto);
+      const query = await valCtrl.deleteValidadeById(id_validade);
+      await get(id_artigo);
       Alert.alert(
         'sucesso',
         "Foi eliminado com sucesso!",
@@ -134,18 +133,18 @@ export const QualidadePage = () => {
   };
 
 
-  const get = async id_produto => {
+  const get = async id_artigo => {
     try {
       dispatch(actions.setLoading(true));
       
-      const query = await getQualidadebyIdProduto(id_produto);
+      const query = await valCtrl.getValidadebyIdArtigo(id_artigo);
+      dispatch(actions.setOneArtigoValidades(query));
       
-      dispatch(actions.setQualidades(query));
     } catch (error) {
      
       Alert.alert(
         'Houve um erro',
-        error,
+        JSON.stringify(error),
         [{ text: 'OK' }],
         { cancelable: false }
       );
@@ -169,15 +168,22 @@ export const QualidadePage = () => {
   };
 
   useEffect(() => {
-    console.log("mounted")
-    get(id_produto);
+
+    navigation.jumpTo('artigo')
+    dispatch(actions.setOneArtigoValidades([]));
     
-  }, [id_produto]);
+  }, [id_seccao]);
+
+  useEffect(() => {
+
+    get(id_artigo);
+    
+  }, [id_artigo]);
 
 
   return (
     <View style={styles.container}>
-      {!id_produto ? (
+      {!id_artigo ? (
         <NotFoundPage />
       ) : (
         <ScrollView style={styles.container}>
@@ -197,14 +203,14 @@ export const QualidadePage = () => {
               loading={loading}
               buttonColor={theme.colors.primary}
               onPress={() => {
-                get(id_produto);
+                get(id_artigo);
               }}>
               Atualizar
             </Button>
           </View>
           <View style={styles.containerSearch}>
             <Searchbar
-              placeholder={artigo.nome}
+              placeholder={ artigo.nome }
               onChangeText={handleSearch}
               value={searchQuery}
             />
@@ -220,12 +226,12 @@ export const QualidadePage = () => {
 
             {data.map((item, i) => (
               <DataTable.Row  
-              onLongPress={() => {
+              onPress={() => {
                 setItem(item)
-                dispatch(actions.setInfoArtigoValidade({ ...item, ...artigo }))
-                dispatch(actions.setqualidadeDialog(!showDialog))
+                dispatch(actions.setArtigo({ ...item, ...artigo }))
+                dispatch(actions.setValidadeDialog(!showDialog))
               } } 
-              key={item.id_qualidade}>
+              key={item.id_validade}>
                 <DataTable.Cell>
                   {formatarDataMid(item.inicio)}
                 </DataTable.Cell>
@@ -235,25 +241,24 @@ export const QualidadePage = () => {
                 <DataTable.Cell>
 
                   {!DataExpirou(item.expira) ? (
-                    <Badge
-                      size={25}
-                      style={{color: 'white', backgroundColor: 'green'}}
-                      theme={{mode: 'exact'}}>
+                    <Chip
+                    elevation={3}
+                    textStyle={{ color:'white' }}
+                    style={{color: 'white',backgroundColor: 'green' }}>
                       {'válido'}
-                    </Badge>
+                    </Chip>
                   ) : (
-                    <Badge
-                      size={25}
-                      style={{color: 'white', backgroundColor: 'red'}}
-                      theme={{mode: 'adaptive'}}>
+                    <Chip elevation={3}
+                    textStyle={{ color:'white' }}
+                      style={{color: 'white',backgroundColor: theme.colors.errorContainer }} >
                       {'expirou'}
-                    </Badge>
+                    </Chip>
                   )}
                 </DataTable.Cell>
                 <DataTable.Cell>
                   <IconButton
                     onPress={() => {
-                      deleteItem(item.id_qualidade);
+                      deleteItem(item.id_validade);
                     }}
                     icon="delete"
                     size={20}

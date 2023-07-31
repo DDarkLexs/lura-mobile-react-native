@@ -22,45 +22,35 @@ import {
 import {useSelector, useDispatch} from 'react-redux';
 import {DataTable, Button} from 'react-native-paper';
 import {deleteArtigo} from '../../utils/database';
-import {CadastroSection} from '../artigo/registro';
-import {QualidadePage} from '../ValidadePAge/todo';
-import {deleteArigoById, getAllartigoByUserId} from '../../controller/artigo';
+import {CadastroSection} from './registro';
+import {QualidadePage} from '../ValidadePage';
 import {actions, actions as artigoActions} from '../../store/reducers/artigo';
 import {formatCurrency} from '../../utils/currency';
+import { actions as setorActions } from '../../store/reducers/setor';
+import { actions as validadeActions } from '../../store/reducers/validade';
+import { ArtigoController } from '../../controller/artigo';
 
 export const ArtigoListItem = navigation => {
   const [visible, setVisible] = useState(false);
-  const [pesquisa, setPesquisa] = useState('');
   const [data, setData] = useState([]);
   const [prop, setprop] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const items = useSelector(state => state.artigo.items);
   const loading = useSelector(state => state.artigo.loading);
-  const {id_usuario} = useSelector(state => state.usuario.account);
+  const { id_usuario } = useSelector(state => state.usuario.account);
   const theme = useTheme();
   const dispatch = useDispatch();
-
+  const id_seccao = useSelector(state => state.setor.setor);    
+  const arigoCtrl = new ArtigoController()
+  
   const showDialog = () => setVisible(true);
 
   const hideDialog = () => setVisible(false);
 
-  const handleSearch = e => {
-    setPesquisa(e.nativeEvent.text);
-    
-    // Filter data based on search query
-    const filteredData = data.filter(artigo =>
-      artigo.nome.toLowerCase().includes(pesquisa.toLowerCase()),
-    );
 
-    // Update the data to display filtered results
-    setData(filteredData);
-  };
 
-  const onChangeSearch = query => setSearchQuery(query);
 
-  const openMenu = () => setVisible(true);
-
-  const closeMenu = () => setVisible(false);
+ 
+ 
 
   const nextPage = () => {
     setprop(null);
@@ -69,32 +59,35 @@ export const ArtigoListItem = navigation => {
     try {
       dispatch(artigoActions.setLoading(true));
 
-      const response = await deleteArigoById(item.id_produto);
-      // console.log(response)
-      Alert
-      .alert('removido com sucesso',
+      const response = await arigoCtrl.deleteArigoById(item.id_artigo);
+      Alert.alert('removido com sucesso',
         `${item.nome} foi removido com sucesso!`,
         [{ text: 'OK' }],
         { cancelable: false } );
      
       get();
 
-      dispatch(artigoActions.setLoading(false));
     } catch (error) {
+      
+      ToastAndroid.show(`${error}`, ToastAndroid.LONG);
+    }finally {
       dispatch(artigoActions.setLoading(false));
 
-      ToastAndroid.show(`${error}`, ToastAndroid.LONG);
     }
   };
 
   const get = async () => {
     try {
+      if (!id_seccao) throw 'informe a setor!'
       dispatch(artigoActions.setLoading(true));
-      const artigos = await getAllartigoByUserId(id_usuario);
+
+      const artigos = await arigoCtrl.getArtigos(id_seccao);
+
       dispatch(artigoActions.setArtigos(artigos));
       setData(artigos);
     } catch (error) {
-      ToastAndroid.show(error, ToastAndroid.LONG);
+      console.log(error)
+      ToastAndroid.show(JSON.stringify(error), ToastAndroid.LONG);
     } finally {
       
       dispatch(artigoActions.setLoading(false));
@@ -106,8 +99,8 @@ export const ArtigoListItem = navigation => {
   const handleNavigation = (artigo) => {
     try {
 
-      dispatch(artigoActions.setIdProduto(artigo.id_produto));
-      navigation.jumpTo('qualidade')
+      dispatch(validadeActions.setIdArtigo(artigo.id_artigo));
+      navigation.jumpTo('validade')
       
     } catch (error) {
       
@@ -124,7 +117,7 @@ export const ArtigoListItem = navigation => {
       // Code to run on unmount (component will be unmounted when it is removed from the screen)
       // console.log('Component unmounted');
     };
-  }, []);
+  }, [id_seccao]);
 
 
 
@@ -132,6 +125,20 @@ export const ArtigoListItem = navigation => {
   
   const Prinpipal = () => {
     // console.log(navigation)
+    const [pesquisa, setPesquisa] = useState('');
+    const handlePesquisa = text => {
+      setPesquisa(text)
+    }
+    const handleSearch = text => {
+      setPesquisa(text)
+      const response = items.filter(
+      artigo => artigo.nome.includes(text) 
+      || artigo.categoria.includes(text))
+      setData(response)
+    };
+  
+  
+
     
     return (
       <ScrollView style={styles.containerStyle}>
@@ -148,12 +155,13 @@ export const ArtigoListItem = navigation => {
               {'adicionar'}
             </Button>
             <Button
-              textColor="white"
               loading={loading}
               disabled={loading}
               onPress={() => get()}
               // loading={true}
-              buttonColor={theme.colors.primary}>
+              textColor="white"
+              buttonColor={theme.colors.primary}
+              >
               {!loading ? 'atualizar' : 'atualizando'}
             </Button>
           </View>
@@ -161,10 +169,14 @@ export const ArtigoListItem = navigation => {
           
         </View>
         <View style={styles.containerSearch}>
-         {/*  <Searchbar
+          <Searchbar
+            value={pesquisa}
+            onSubmitEditing={(e)=>handleSearch(e.nativeEvent.text)}
+            onChangeText={handlePesquisa}
+            loading={loading}          
+            editable={!loading}
             placeholder="procurar"
-            onChange={handleSearch} 
-            value={pesquisa} /> */}
+             />
         </View>
 
         <DataTable>
@@ -179,7 +191,7 @@ export const ArtigoListItem = navigation => {
           {data.map(item => (
             <DataTable.Row 
             onPress={e =>  handleNavigation( item ) }
-            key={item.id_produto}>
+            key={item.id_artigo}>
               <DataTable.Cell>{item.nome}</DataTable.Cell>
               <DataTable.Cell>{item.categoria}</DataTable.Cell>
               <DataTable.Cell>{formatCurrency(item.preco)}</DataTable.Cell>
