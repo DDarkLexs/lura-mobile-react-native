@@ -20,7 +20,21 @@ import {useDispatch, useSelector} from 'react-redux';
 import {UserController} from './src/controller/usuario';
 import {actions as userAction} from './src/store/reducers/usuario';
 import {Alert, Image} from 'react-native';
+
 const App = () => {
+
+    // Alert.alert('Alert Title', 'My Alert Msg', [
+    //     {
+    //       text: 'Cancel',
+    //       onPress: () => console.log('Cancel Pressed'),
+    //       style: 'cancel',
+    //     },
+    //     {text: 'OK', onPress: () => console.log('OK Pressed')},
+    //   ]);
+  
+    
+
+
     const userCtrl = new UserController();
     const [loading, setLoading] = useState(true);
     let account = useSelector((state) => state.usuario.account);
